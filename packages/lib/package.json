@@ -1,0 +1,28 @@
+{
+  "name": "lib",
+  "version": "0.0.0",
+  "description": "Library to convert BotW save files between console formats",
+  "author": "ametis70",
+  "homepage": "",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "test": "node ./__tests__/lib.test.js"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.59.5",
+    "@typescript-eslint/parser": "^5.59.5",
+    "eslint": "^8.40.0",
+    "eslint-config-prettier": "^8.8.0",
+    "prettier": "2.8.8",
+    "typescript": "^5.0.4"
+  }
+}

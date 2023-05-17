@@ -1,23 +1,23 @@
 import fs from "fs/promises";
 import path from "path";
 
-import { SaveType, getSaveType } from "../src/lib";
+import { SaveType, getSaveType, getSaveVersion } from "../src/lib";
 
 describe("library", () => {
-  it("should return the correct save type when given a Wii U option.save file", async () => {
+  it("should return the correct save type and version when given a Wii U option.save file", async () => {
     const file = await fs.readFile(
       path.resolve(__dirname, "data", "wiiu", "option.sav")
     );
     const saveType = getSaveType(file.buffer);
-    expect(saveType).toBe(SaveType.WiiU);
+    expect(saveType).toStrictEqual({ type: SaveType.WiiU, version: 'v1.5' });
   });
 
-  it("should return the correct save type when given a Switch option.save file", async () => {
+  it("should return the correct save type and version when given a Switch option.save file", async () => {
     const file = await fs.readFile(
       path.resolve(__dirname, "data", "switch", "option.sav")
     );
     const saveType = getSaveType(file.buffer);
-    expect(saveType).toBe(SaveType.Switch);
+    expect(saveType).toStrictEqual({ type: SaveType.Switch, version: 'v1.5' });
   });
 
   it("should throw a type error when given an invalid file", async () => {

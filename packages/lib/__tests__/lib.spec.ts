@@ -1,7 +1,9 @@
 import fs from "fs/promises";
 import path from "path";
 
-import { SaveType, convertSaveFile, getSaveType } from "../src/lib";
+import { SaveType } from "../src/data";
+import { convertSaveFile, getSaveType } from "../src/lib";
+
 import { compareArrays } from "./utils";
 
 describe("library", () => {

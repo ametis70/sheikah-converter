@@ -9,7 +9,7 @@ describe("library", () => {
       path.resolve(__dirname, "data", "wiiu", "option.sav")
     );
     const saveType = getSaveType(file.buffer);
-    expect(saveType).toStrictEqual({ type: SaveType.WiiU, version: 'v1.5' });
+    expect(saveType).toStrictEqual({ type: SaveType.WiiU, version: "v1.5" });
   });
 
   it("should return the correct save type and version when given a Switch option.save file", async () => {
@@ -17,7 +17,7 @@ describe("library", () => {
       path.resolve(__dirname, "data", "switch", "option.sav")
     );
     const saveType = getSaveType(file.buffer);
-    expect(saveType).toStrictEqual({ type: SaveType.Switch, version: 'v1.5' });
+    expect(saveType).toStrictEqual({ type: SaveType.Switch, version: "v1.5" });
   });
 
   it("should throw a type error when given an invalid file", async () => {

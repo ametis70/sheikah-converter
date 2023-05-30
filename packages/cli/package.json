@@ -1,7 +1,7 @@
 {
-  "name": "cli",
+  "name": "@sheikah-translator/cli",
   "version": "0.0.0",
-  "description": "Sheikah Translator CLI",
+  "description": "CLI to convert BotW save files between console formats",
   "author": "Ian Mancini @ametis70",
   "bin": {
     "sheikahcli": "./bin/run"
@@ -20,7 +20,7 @@
     "@oclif/core": "^2",
     "@oclif/plugin-help": "^5",
     "@oclif/plugin-plugins": "^2.4.7",
-    "eslint-config-prettier": "^8.8.0"
+    "@sheikah-translator/lib": "*"
   },
   "devDependencies": {
     "@oclif/test": "^2.3.21",
@@ -31,6 +31,7 @@
     "eslint": "^7.32.0",
     "eslint-config-oclif": "^4",
     "eslint-config-oclif-typescript": "^1.0.3",
+    "eslint-config-prettier": "^8.8.0",
     "mocha": "^9",
     "oclif": "^3",
     "shx": "^0.3.3",
@@ -41,17 +42,12 @@
   "oclif": {
     "bin": "sheikahcli",
     "dirname": "sheikahcli",
-    "commands": "./dist/commands",
+    "commands": "./dist",
+    "default": ".",
     "plugins": [
       "@oclif/plugin-help",
       "@oclif/plugin-plugins"
-    ],
-    "topicSeparator": " ",
-    "topics": {
-      "hello": {
-        "description": "Say hello to the world and others"
-      }
-    }
+    ]
   },
   "scripts": {
     "build": "shx rm -rf dist && tsc -b",

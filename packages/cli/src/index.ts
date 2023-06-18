@@ -25,10 +25,12 @@ export enum OutputDirectoryValidation {
 }
 
 export class Convert extends Command {
-  static summary = "Converts a BotW save";
-  static description = `
-This program converts a BotW save directory to from one console format to another. This works with Wii U and Switch saves up to version 1.6 of the game. Version 1.5 and 1.6 are compatible and should load on both platforms.
-`;
+  static summary = "Converts a BotW saves";
+  static description = `This program converts a BotW save directory to from one console format to another.
+
+This works with Wii U and Switch saves up to version 1.6 of the game.
+
+Version 1.5 and 1.6 are compatible and should work interchangeably on both platforms.`;
 
   static args = {
     input: Args.directory({
@@ -46,8 +48,33 @@ This program converts a BotW save directory to from one console format to anothe
       char: "f",
       description: "Overwrite existing output directory",
     }),
+    verbose: Flags.boolean({
+      char: "v",
+      description: "Print verbose output",
+    }),
   };
 
+  private _verbose = false;
+
+  /**
+   * Only log when verbose flag is passed
+   * @param args Arguments to pass to log function
+   * @returns void
+   */
+  verbose(...args: any[]): void {
+    if (!this._verbose) {
+      return;
+    }
+
+    this.log(...args);
+  }
+
+  /**
+   * Function to load game_data.sav files from target directory
+   *
+   * @param dir The directory to load save files from
+   * @returns Array of tuples of the save file path and the save file buffer
+   */
   private async getSaveFiles(dir: string): Promise<[string, Buffer][]> {
     const files = await readdir(dir);
 
@@ -66,14 +93,14 @@ This program converts a BotW save directory to from one console format to anothe
     }
 
     if (noSaveDirectories) {
-      throw new Error("Missing save directories files");
+      this.error("Missing save directories files");
     }
 
     const saveFiles = await Promise.all(saveFilesPromises);
 
     for (const [path, saveFile] of saveFiles) {
       const { type, version } = getSaveType(saveFile);
-      console.log(
+      this.verbose(
         `Found ${getPrettySaveType(type)} save file (${version}) in ${path}`
       );
     }
@@ -81,6 +108,12 @@ This program converts a BotW save directory to from one console format to anothe
     return saveFiles;
   }
 
+  /**
+   * Function to load option.sav file from target directory
+   *
+   * @param dir The directory to load save files from
+   * @returns Buffer from option.sav file
+   */
   private async getOptionFile(dir: string): Promise<Buffer> {
     const files = await readdir(dir);
 
@@ -92,13 +125,19 @@ This program converts a BotW save directory to from one console format to anothe
     const optionFile = await readFile(path);
 
     const { type, version } = getSaveType(optionFile);
-    console.log(
+    this.verbose(
       `Found ${getPrettySaveType(type)} option file (${version}) in ${path}`
     );
 
     return optionFile;
   }
 
+  /**
+   * Validate that the output directory is valid
+   *
+   * @param dir The directory to validate
+   * @returns OutputDirectoryValidation enum value
+   */
   validateOutputDirectory = async (
     dir: string
   ): Promise<OutputDirectoryValidation> => {
@@ -121,6 +160,10 @@ This program converts a BotW save directory to from one console format to anothe
     return OutputDirectoryValidation.DIR_NOT_EMPTY;
   };
 
+  /**
+   * Generate a filename for the output directory based on the current date and time
+   * @returns string in the form of botw-YYYY-MM-DD_HH-MM-SS
+   */
   generateOutputDirFilename(): string {
     return `botw-${new Date()
       .toISOString()
@@ -131,6 +174,10 @@ This program converts a BotW save directory to from one console format to anothe
 
   async run(): Promise<void> {
     const { args, flags } = await this.parse(Convert);
+
+    if (flags.verbose) {
+      this._verbose = true;
+    }
 
     const outputDir =
       args.output ?? resolve(process.cwd(), this.generateOutputDirFilename());
@@ -152,7 +199,7 @@ This program converts a BotW save directory to from one console format to anothe
 
     switch (outputValidation) {
       case OutputDirectoryValidation.NOT_EXISTS:
-        this.log(`Creating dir "${outputDir}"`);
+        this.verbose(`Creating dir "${outputDir}"`);
         await mkdir(outputDir);
         break;
 
@@ -167,7 +214,7 @@ This program converts a BotW save directory to from one console format to anothe
         break;
 
       case OutputDirectoryValidation.DIR_EMPTY:
-        this.log(`Using existing empty dir "${outputDir}"`);
+        this.verbose(`Using existing empty dir "${outputDir}"`);
         break;
     }
 

@@ -1,15 +1,17 @@
 import { resolve } from "node:path";
-import { mkdir, rm } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { readdir, readFile, lstat, mkdir, rm } from "node:fs/promises";
 
 import { Command, Args, Flags, ux } from "@oclif/core";
 
-import {
-  generateOutputDirFilename,
-  getOptionFile,
-  getSaveFiles,
-  OutputDirectoryValidation,
-  validateOutputDirectory,
-} from "./utils";
+import { getSaveType, getPrettySaveType } from "@sheikah-translator/lib";
+
+export enum OutputDirectoryValidation {
+  NOT_EXISTS,
+  NOT_DIR,
+  DIR_EMPTY,
+  DIR_NOT_EMPTY,
+}
 
 export class Convert extends Command {
   static summary = "Converts a BotW save";
@@ -35,13 +37,96 @@ This program converts a BotW save directory to from one console format to anothe
     }),
   };
 
+  private async getSaveFiles(dir: string): Promise<[string, Buffer][]> {
+    const files = await readdir(dir);
+
+    console.log(files);
+
+    let noSaveDirectories = true;
+    const saveFilesPromises: Promise<[string, Buffer]>[] = [];
+
+    for (const saveDir of [0, 1, 2, 3, 4, 5, 6, 7].map((n) => String(n))) {
+      if (!files.includes(saveDir)) {
+        break;
+      }
+
+      noSaveDirectories = false;
+
+      const path = resolve(dir, saveDir, "game_data.sav");
+      saveFilesPromises.push(readFile(path).then((data) => [path, data]));
+    }
+
+    if (noSaveDirectories) {
+      throw new Error("Missing save directories files");
+    }
+
+    const saveFiles = await Promise.all(saveFilesPromises);
+
+    for (const [path, saveFile] of saveFiles) {
+      const { type, version } = getSaveType(saveFile);
+      console.log(
+        `Found ${getPrettySaveType(type)} save file (${version}) in ${path}`
+      );
+    }
+
+    return saveFiles;
+  }
+
+  private async getOptionFile(dir: string): Promise<Buffer> {
+    const files = await readdir(dir);
+
+    if (!files.includes("option.sav")) {
+      throw new Error(`No options.sav file found in ${dir}`);
+    }
+
+    const path = resolve(dir, "option.sav");
+    const optionFile = await readFile(path);
+
+    const { type, version } = getSaveType(optionFile);
+    console.log(
+      `Found ${getPrettySaveType(type)} option file (${version}) in ${path}`
+    );
+
+    return optionFile;
+  }
+
+  validateOutputDirectory = async (
+    dir: string
+  ): Promise<OutputDirectoryValidation> => {
+    if (!existsSync(dir)) {
+      return OutputDirectoryValidation.NOT_EXISTS;
+    }
+
+    const stat = await lstat(dir);
+
+    if (!stat.isDirectory()) {
+      return OutputDirectoryValidation.NOT_DIR;
+    }
+
+    const contents = await readdir(dir);
+
+    if (contents.length === 0) {
+      return OutputDirectoryValidation.DIR_EMPTY;
+    }
+
+    return OutputDirectoryValidation.DIR_NOT_EMPTY;
+  };
+
+  generateOutputDirFilename(): string {
+    return `botw-${new Date()
+      .toISOString()
+      .slice(0, 19)
+      .replace("T", "_")
+      .replace(/:/g, "-")}`;
+  }
+
   async run(): Promise<void> {
     const { args, flags } = await this.parse(Convert);
 
     const outputDir =
-      args.output ?? resolve(process.cwd(), generateOutputDirFilename());
+      args.output ?? resolve(process.cwd(), this.generateOutputDirFilename());
 
-    const outputValidation = await validateOutputDirectory(outputDir);
+    const outputValidation = await this.validateOutputDirectory(outputDir);
 
     const handleForceFlag = async () => {
       if (!flags.force) {
@@ -76,7 +161,7 @@ This program converts a BotW save directory to from one console format to anothe
         break;
     }
 
-    await getSaveFiles(args.input);
-    await getOptionFile(args.input);
+    await this.getSaveFiles(args.input);
+    await this.getOptionFile(args.input);
   }
 }

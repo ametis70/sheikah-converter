@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { readdir, readFile, lstat } from "node:fs/promises";
 import { resolve } from "node:path";
 
-import { getSaveType } from "@sheikah-translator/lib";
+import { getSaveType, getPrettySaveType } from "@sheikah-translator/lib";
 
 export const getSaveFiles = async (
   dir: string
@@ -32,7 +32,9 @@ export const getSaveFiles = async (
 
   for (const [path, saveFile] of saveFiles) {
     const { type, version } = getSaveType(saveFile);
-    console.log(`Found ${type} save file (${version}) in ${path}`);
+    console.log(
+      `Found ${prettyPrintSaveType(type)} save file (${version}) in ${path}`
+    );
   }
 
   return saveFiles;
@@ -49,7 +51,9 @@ export const getOptionFile = async (dir: string): Promise<Buffer> => {
   const optionFile = await readFile(path);
 
   const { type, version } = getSaveType(optionFile);
-  console.log(`Found ${type} option file (${version}) in ${path}`);
+  console.log(
+    `Found ${prettyPrintSaveType(type)} option file (${version}) in ${path}`
+  );
 
   return optionFile;
 };

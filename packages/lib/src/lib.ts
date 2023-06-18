@@ -86,3 +86,15 @@ export const convertSaveFile = (buffer: ArrayBufferLike): ArrayBufferLike => {
 
   return converted;
 };
+
+export const getPrettySaveType = (type: SaveType) => {
+  switch (type) {
+    case SaveType.WiiU:
+      return "Wii U";
+    case SaveType.Switch: {
+      return "Switch";
+    }
+    default:
+      return "Unknown";
+  }
+};

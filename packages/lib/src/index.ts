@@ -1,2 +1,2 @@
-export { getSaveType, convertSaveFile } from "./lib";
+export { getSaveType, convertSaveFile, getPrettySaveType } from "./lib";
 export { SaveType } from "./data";

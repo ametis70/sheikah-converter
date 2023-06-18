@@ -1,6 +1,7 @@
 import { basename, dirname, relative, resolve } from "node:path";
 import { existsSync } from "node:fs";
 import {
+  copyFile,
   readdir,
   readFile,
   lstat,
@@ -180,7 +181,7 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
    * @returns void
    */
   private async handleForceFlag() {
-    if (this._force) {
+    if (!this._force) {
       this.error("Set -f to allow deleting files");
     }
 
@@ -248,6 +249,22 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
     await writeFile(outputPath, Buffer.from(convertedBuffer));
   }
 
+  /**
+   * Copy file from images directory
+   *
+   * @param dir The directory to copy from
+   * @param filename The filename to copy
+   * @returns void resolving promise
+   */
+  private async copyImage(
+    dir: "pict_book" | "album",
+    filename: string
+  ): Promise<void> {
+    const inputPath = resolve(this.inputDir, dir, filename);
+    const outputPath = resolve(this.outputDir, dir, filename);
+    return copyFile(inputPath, outputPath);
+  }
+
   async run(): Promise<void> {
     const { args, flags } = await this.parse(Convert);
 
@@ -270,9 +287,9 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
     const saveFiles = await this.getSaveFiles(args.input);
     const optionFile = await this.getOptionFile(args.input);
 
+    // Trigger buffers conversion
     const convertPromises: Promise<void>[] = [];
 
-    // Trigger buffers conversion
     for (const [savePath, saveBuffer] of saveFiles) {
       convertPromises.push(this.convertAndSave(savePath, saveBuffer));
     }
@@ -281,8 +298,23 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
       this.convertAndSave(resolve(args.input, "options.sav"), optionFile)
     );
 
+    // Trigger image copying
+    const copyPromises: Promise<void>[] = [];
+
+    await mkdir(resolve(this.outputDir, "pict_book"));
+    const pictBookFiles = await readdir(resolve(this.inputDir, "pict_book"));
+    for (const imageName of pictBookFiles) {
+      copyPromises.push(this.copyImage("pict_book", imageName));
+    }
+
+    await mkdir(resolve(this.outputDir, "album"));
+    const albumFiles = await readdir(resolve(this.inputDir, "album"));
+    for (const imageName of albumFiles) {
+      copyPromises.push(this.copyImage("album", imageName));
+    }
+
     // Wait for all to finish
-    await Promise.all(convertPromises);
+    await Promise.all([...convertPromises, ...copyPromises]);
 
     this.log("Finished!");
   }

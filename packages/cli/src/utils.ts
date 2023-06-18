@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { readdir, readFile } from "node:fs/promises";
+import { readdir, readFile, lstat } from "node:fs/promises";
 import { resolve } from "node:path";
 
 import { getSaveType } from "@sheikah-translator/lib";
@@ -54,10 +54,39 @@ export const getOptionFile = async (dir: string): Promise<Buffer> => {
   return optionFile;
 };
 
+export enum OutputDirectoryValidation {
+  NOT_EXISTS,
+  NOT_DIR,
+  DIR_EMPTY,
+  DIR_NOT_EMPTY,
+}
+
 export const validateOutputDirectory = async (
   dir: string
-): Promise<boolean> => {
-  return (
-    !existsSync(dir) || (existsSync(dir) && (await readdir(dir)).length === 0)
-  );
+): Promise<OutputDirectoryValidation> => {
+  if (!existsSync(dir)) {
+    return OutputDirectoryValidation.NOT_EXISTS;
+  }
+
+  const stat = await lstat(dir);
+
+  if (!stat.isDirectory()) {
+    return OutputDirectoryValidation.NOT_DIR;
+  }
+
+  const contents = await readdir(dir);
+
+  if (contents.length === 0) {
+    return OutputDirectoryValidation.DIR_EMPTY;
+  }
+
+  return OutputDirectoryValidation.DIR_NOT_EMPTY;
+};
+
+export const generateOutputDirFilename = (): string => {
+  return `botw-${new Date()
+    .toISOString()
+    .slice(0, 19)
+    .replace("T", "_")
+    .replace(/:/g, "-")}`;
 };

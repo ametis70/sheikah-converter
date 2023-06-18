@@ -1,10 +1,21 @@
-import { resolve } from "node:path";
+import { basename, dirname, relative, resolve } from "node:path";
 import { existsSync } from "node:fs";
-import { readdir, readFile, lstat, mkdir, rm } from "node:fs/promises";
+import {
+  readdir,
+  readFile,
+  lstat,
+  mkdir,
+  rm,
+  writeFile,
+} from "node:fs/promises";
 
 import { Command, Args, Flags, ux } from "@oclif/core";
 
-import { getSaveType, getPrettySaveType } from "@sheikah-translator/lib";
+import {
+  convertSaveFile,
+  getSaveType,
+  getPrettySaveType,
+} from "@sheikah-translator/lib";
 
 export enum OutputDirectoryValidation {
   NOT_EXISTS,
@@ -39,8 +50,6 @@ This program converts a BotW save directory to from one console format to anothe
 
   private async getSaveFiles(dir: string): Promise<[string, Buffer][]> {
     const files = await readdir(dir);
-
-    console.log(files);
 
     let noSaveDirectories = true;
     const saveFilesPromises: Promise<[string, Buffer]>[] = [];
@@ -146,6 +155,7 @@ This program converts a BotW save directory to from one console format to anothe
         this.log(`Creating dir "${outputDir}"`);
         await mkdir(outputDir);
         break;
+
       case OutputDirectoryValidation.NOT_DIR:
         this.warn(`"${outputDir}" exists but is not a directory`);
         await handleForceFlag();
@@ -161,7 +171,40 @@ This program converts a BotW save directory to from one console format to anothe
         break;
     }
 
-    await this.getSaveFiles(args.input);
-    await this.getOptionFile(args.input);
+    const saveFiles = await this.getSaveFiles(args.input);
+    const optionFile = await this.getOptionFile(args.input);
+
+    const convertPromises: Promise<void>[] = [];
+
+    const convertAndSave = async (
+      savePath: string,
+      saveBuffer: ArrayBufferLike
+    ): Promise<void> => {
+      const relativePath = relative(args.input, savePath);
+      const directoryName = dirname(relativePath);
+      const dirPath = resolve(outputDir, directoryName);
+      const fileName = basename(relativePath);
+      const outputPath = resolve(outputDir, directoryName, fileName);
+
+      if (!existsSync(dirPath)) {
+        await mkdir(dirPath, { recursive: true });
+      }
+
+      const convertedBuffer = convertSaveFile(saveBuffer);
+
+      await writeFile(outputPath, Buffer.from(convertedBuffer));
+    };
+
+    for (const [savePath, saveBuffer] of saveFiles) {
+      convertPromises.push(convertAndSave(savePath, saveBuffer));
+    }
+
+    convertPromises.push(
+      convertAndSave(resolve(args.input, "options.sav"), optionFile)
+    );
+
+    await Promise.all(convertPromises);
+
+    this.log("Finished!");
   }
 }

@@ -55,6 +55,10 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
   };
 
   private _verbose = false;
+  private _force = false;
+
+  private inputDir = "";
+  private outputDir = "";
 
   /**
    * Only log when verbose flag is passed
@@ -138,38 +142,110 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
    * @param dir The directory to validate
    * @returns OutputDirectoryValidation enum value
    */
-  validateOutputDirectory = async (
-    dir: string
-  ): Promise<OutputDirectoryValidation> => {
-    if (!existsSync(dir)) {
+  private async validateOutputDirectory(): Promise<OutputDirectoryValidation> {
+    if (!existsSync(this.outputDir)) {
       return OutputDirectoryValidation.NOT_EXISTS;
     }
 
-    const stat = await lstat(dir);
+    const stat = await lstat(this.outputDir);
 
     if (!stat.isDirectory()) {
       return OutputDirectoryValidation.NOT_DIR;
     }
 
-    const contents = await readdir(dir);
+    const contents = await readdir(this.outputDir);
 
     if (contents.length === 0) {
       return OutputDirectoryValidation.DIR_EMPTY;
     }
 
     return OutputDirectoryValidation.DIR_NOT_EMPTY;
-  };
+  }
 
   /**
    * Generate a filename for the output directory based on the current date and time
    * @returns string in the form of botw-YYYY-MM-DD_HH-MM-SS
    */
-  generateOutputDirFilename(): string {
+  private generateOutputDirFilename(): string {
     return `botw-${new Date()
       .toISOString()
       .slice(0, 19)
       .replace("T", "_")
       .replace(/:/g, "-")}`;
+  }
+
+  /**
+   * This will prompt to remove the output directory if force is true
+   *
+   * @returns void
+   */
+  private async handleForceFlag() {
+    if (this._force) {
+      this.error("Set -f to allow deleting files");
+    }
+
+    if (await ux.confirm(`Remove ${this.outputDir}?`)) {
+      await rm(this.outputDir, { force: true, recursive: true });
+      await mkdir(this.outputDir);
+    } else {
+      this.exit(1);
+    }
+  }
+
+  /**
+   * Validate the output directory and create it if it doesn't exist
+   *
+   * @returns void resolving promise
+   */
+  private async validateAndCreateOutputDirectory() {
+    const outputValidation = await this.validateOutputDirectory();
+
+    switch (outputValidation) {
+      case OutputDirectoryValidation.NOT_EXISTS:
+        this.verbose(`Creating dir "${this.outputDir}"`);
+        await mkdir(this.outputDir);
+        break;
+
+      case OutputDirectoryValidation.NOT_DIR:
+        this.warn(`"${this.outputDir}" exists but is not a directory`);
+        await this.handleForceFlag();
+        break;
+
+      case OutputDirectoryValidation.DIR_NOT_EMPTY:
+        this.warn(`"${this.outputDir}" exists but is not empty`);
+        await this.handleForceFlag();
+        break;
+
+      case OutputDirectoryValidation.DIR_EMPTY:
+        this.verbose(`Using existing empty dir "${this.outputDir}"`);
+        break;
+    }
+  }
+
+  /**
+   * Convert and save the save file to the output directory
+   *
+   * @param savePath The path to the save file
+   * @param saveBuffer The buffer of the original save file
+   * @returns void resolving promise
+   */
+  private async convertAndSave(
+    savePath: string,
+    saveBuffer: ArrayBufferLike
+  ): Promise<void> {
+    const relativePath = relative(this.inputDir, savePath);
+    const directoryName = dirname(relativePath);
+    const dirPath = resolve(this.outputDir, directoryName);
+    const fileName = basename(relativePath);
+    const outputPath = resolve(this.outputDir, directoryName, fileName);
+
+    if (!existsSync(dirPath)) {
+      await mkdir(dirPath, { recursive: true });
+    }
+
+    const convertedBuffer = convertSaveFile(saveBuffer);
+
+    await writeFile(outputPath, Buffer.from(convertedBuffer));
   }
 
   async run(): Promise<void> {
@@ -179,77 +255,33 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
       this._verbose = true;
     }
 
-    const outputDir =
-      args.output ?? resolve(process.cwd(), this.generateOutputDirFilename());
-
-    const outputValidation = await this.validateOutputDirectory(outputDir);
-
-    const handleForceFlag = async () => {
-      if (!flags.force) {
-        this.error("Set -f to allow deleting files");
-      }
-
-      if (await ux.confirm(`Remove ${outputDir}?`)) {
-        await rm(outputDir, { force: true, recursive: true });
-        await mkdir(outputDir);
-      } else {
-        this.exit(1);
-      }
-    };
-
-    switch (outputValidation) {
-      case OutputDirectoryValidation.NOT_EXISTS:
-        this.verbose(`Creating dir "${outputDir}"`);
-        await mkdir(outputDir);
-        break;
-
-      case OutputDirectoryValidation.NOT_DIR:
-        this.warn(`"${outputDir}" exists but is not a directory`);
-        await handleForceFlag();
-        break;
-
-      case OutputDirectoryValidation.DIR_NOT_EMPTY:
-        this.warn(`"${outputDir}" exists but is not empty`);
-        await handleForceFlag();
-        break;
-
-      case OutputDirectoryValidation.DIR_EMPTY:
-        this.verbose(`Using existing empty dir "${outputDir}"`);
-        break;
+    if (flags.force) {
+      this._force = true;
     }
 
+    this.outputDir =
+      args.output ?? resolve(process.cwd(), this.generateOutputDirFilename());
+
+    this.inputDir = args.input;
+
+    await this.validateAndCreateOutputDirectory();
+
+    // Read and validate save files
     const saveFiles = await this.getSaveFiles(args.input);
     const optionFile = await this.getOptionFile(args.input);
 
     const convertPromises: Promise<void>[] = [];
 
-    const convertAndSave = async (
-      savePath: string,
-      saveBuffer: ArrayBufferLike
-    ): Promise<void> => {
-      const relativePath = relative(args.input, savePath);
-      const directoryName = dirname(relativePath);
-      const dirPath = resolve(outputDir, directoryName);
-      const fileName = basename(relativePath);
-      const outputPath = resolve(outputDir, directoryName, fileName);
-
-      if (!existsSync(dirPath)) {
-        await mkdir(dirPath, { recursive: true });
-      }
-
-      const convertedBuffer = convertSaveFile(saveBuffer);
-
-      await writeFile(outputPath, Buffer.from(convertedBuffer));
-    };
-
+    // Trigger buffers conversion
     for (const [savePath, saveBuffer] of saveFiles) {
-      convertPromises.push(convertAndSave(savePath, saveBuffer));
+      convertPromises.push(this.convertAndSave(savePath, saveBuffer));
     }
 
     convertPromises.push(
-      convertAndSave(resolve(args.input, "options.sav"), optionFile)
+      this.convertAndSave(resolve(args.input, "options.sav"), optionFile)
     );
 
+    // Wait for all to finish
     await Promise.all(convertPromises);
 
     this.log("Finished!");

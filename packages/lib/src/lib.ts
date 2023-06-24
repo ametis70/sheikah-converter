@@ -39,7 +39,10 @@ function* getBytes(
   }
 }
 
-export const convertSaveFile = (buffer: ArrayBufferLike): ArrayBufferLike => {
+export const convertSaveFile = (
+  buffer: ArrayBufferLike,
+  trackblock = false
+): ArrayBufferLike => {
   const converted = new ArrayBuffer(buffer.byteLength);
   const convertedDataView = new DataView(converted);
   const textDecoder = new TextDecoder("utf-8");
@@ -57,10 +60,23 @@ export const convertSaveFile = (buffer: ArrayBufferLike): ArrayBufferLike => {
     write(dv, position);
   };
 
-  let dontReverseNext = false;
+  let dontReverseNext = trackblock;
 
   for (const [position, data] of getBytes(buffer)) {
     const dv = new DataView(data.buffer);
+
+    if (trackblock && position === 4) {
+      const reversed = new Uint8Array([
+        dv.getUint8(1),
+        dv.getUint8(0),
+        dv.getUint8(3),
+        dv.getUint8(2),
+      ]);
+      const reversedDv = new DataView(reversed.buffer);
+      write(reversedDv, position);
+      continue;
+    }
+
     const dataUint32 = dv.getUint32(0);
 
     if (dontReverseNext) {

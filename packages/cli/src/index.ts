@@ -300,7 +300,7 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
     }
 
     convertPromises.push(
-      this.convertAndSave(resolve(args.input, "options.sav"), optionFile)
+      this.convertAndSave(resolve(args.input, "option.sav"), optionFile)
     );
 
     // Trigger image copying

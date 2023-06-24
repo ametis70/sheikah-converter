@@ -31,7 +31,7 @@ describe("library", () => {
     }).toThrow(TypeError);
   });
 
-  it("should should convert a Wii U game_data.sav file to Switch correctly", async () => {
+  it("should convert a Wii U game_data.sav file to Switch correctly", async () => {
     const wiiUFile = await fs.readFile(
       path.resolve(__dirname, "data", "wiiu", "0", "game_data.sav")
     );
@@ -51,7 +51,7 @@ describe("library", () => {
     ).not.toThrow();
   });
 
-  it("should should convert a Switch game_data.sav file to WiiU correctly", async () => {
+  it("should convert a Switch game_data.sav file to WiiU correctly", async () => {
     const switchFile = await fs.readFile(
       path.resolve(__dirname, "data", "switch", "0", "game_data.sav")
     );
@@ -60,6 +60,46 @@ describe("library", () => {
 
     const wiiUReferenceFile = await fs.readFile(
       path.resolve(__dirname, "data", "wiiu", "0", "game_data.sav")
+    );
+
+    const switchArr = new Uint8Array(switchFile);
+    const resultArr = new Uint8Array(result);
+    const wiiUReferenceArr = new Uint8Array(wiiUReferenceFile);
+
+    expect(() =>
+      compareArrays(resultArr, wiiUReferenceArr, switchArr)
+    ).not.toThrow();
+  });
+
+  it("should convert a Wii U caption.sav file to Switch correctly", async () => {
+    const wiiUFile = await fs.readFile(
+      path.resolve(__dirname, "data", "wiiu", "0", "caption.sav")
+    );
+
+    const result = convertSaveFile(wiiUFile);
+
+    const switchReferenceFile = await fs.readFile(
+      path.resolve(__dirname, "data", "switch", "0", "caption.sav")
+    );
+
+    const wiiUArr = new Uint8Array(wiiUFile);
+    const resultArr = new Uint8Array(result);
+    const switchReferenceArr = new Uint8Array(switchReferenceFile);
+
+    expect(() =>
+      compareArrays(resultArr, switchReferenceArr, wiiUArr)
+    ).not.toThrow();
+  });
+
+  it("should convert a Switch caption.sav file to WiiU correctly", async () => {
+    const switchFile = await fs.readFile(
+      path.resolve(__dirname, "data", "switch", "0", "caption.sav")
+    );
+
+    const result = convertSaveFile(switchFile);
+
+    const wiiUReferenceFile = await fs.readFile(
+      path.resolve(__dirname, "data", "wiiu", "0", "caption.sav")
     );
 
     const switchArr = new Uint8Array(switchFile);

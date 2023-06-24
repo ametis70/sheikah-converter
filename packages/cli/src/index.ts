@@ -103,6 +103,19 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
       );
     }
 
+    if (files.includes('tracker')) {
+      const trackblocks = await readdir(resolve(dir, 'tracker'));
+
+      for (const trackblock of trackblocks) {
+        noSaveDirectories = false;
+
+        const trackblockPath = resolve(dir, 'tracker', trackblock);
+        saveFilesPromises.push(
+          readFile(trackblockPath).then((data) => [trackblockPath, data])
+        );
+      }
+    }
+
     if (noSaveDirectories) {
       this.error("Missing save directories files");
     }
@@ -110,6 +123,10 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
     const saveFiles = await Promise.all(saveFilesPromises);
 
     for (const [path, saveFile] of saveFiles) {
+      if (path.includes('trackblock')) {
+        continue;
+      }
+
       const { type, version } = getSaveType(saveFile);
       this.verbose(
         `Found ${getPrettySaveType(type)} save file (${version}) in ${path}`
@@ -250,7 +267,7 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
       await mkdir(dirPath, { recursive: true });
     }
 
-    const convertedBuffer = convertSaveFile(saveBuffer);
+    const convertedBuffer = convertSaveFile(saveBuffer, savePath.includes('trackblock'));
 
     await writeFile(outputPath, Buffer.from(convertedBuffer));
   }
@@ -298,6 +315,8 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
       convertPromises.push(this.convertAndSave(savePath, saveBuffer));
       saveFileDirs.add(relative(this.inputDir, dirname(savePath)));
     }
+
+    saveFileDirs.delete('tracker');
 
     convertPromises.push(
       this.convertAndSave(resolve(args.input, "option.sav"), optionFile)

@@ -110,4 +110,44 @@ describe("library", () => {
       compareArrays(resultArr, wiiUReferenceArr, switchArr)
     ).not.toThrow();
   });
+
+  it("should convert a Wii U trackblockXX.sav file to Switch correctly", async () => {
+    const wiiUFile = await fs.readFile(
+      path.resolve(__dirname, "data", "wiiu", "tracker", "trackblock00.sav")
+    );
+
+    const result = convertSaveFile(wiiUFile, true);
+
+    const switchReferenceFile = await fs.readFile(
+      path.resolve(__dirname, "data", "switch", "tracker", "trackblock00.sav")
+    );
+
+    const wiiUArr = new Uint8Array(wiiUFile);
+    const resultArr = new Uint8Array(result);
+    const switchReferenceArr = new Uint8Array(switchReferenceFile);
+
+    expect(() =>
+      compareArrays(resultArr, switchReferenceArr, wiiUArr)
+    ).not.toThrow();
+  });
+
+  it("should convert a Switch trackblockXX.sav file to WiiU correctly", async () => {
+    const switchFile = await fs.readFile(
+      path.resolve(__dirname, "data", "switch", "tracker", "trackblock00.sav")
+    );
+
+    const result = convertSaveFile(switchFile, true);
+
+    const wiiUReferenceFile = await fs.readFile(
+      path.resolve(__dirname, "data", "wiiu", "tracker", "trackblock00.sav")
+    );
+
+    const switchArr = new Uint8Array(switchFile);
+    const resultArr = new Uint8Array(result);
+    const wiiUReferenceArr = new Uint8Array(wiiUReferenceFile);
+
+    expect(() =>
+      compareArrays(resultArr, wiiUReferenceArr, switchArr)
+    ).not.toThrow();
+  });
 });

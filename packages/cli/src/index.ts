@@ -93,8 +93,14 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
 
       noSaveDirectories = false;
 
-      const path = resolve(dir, saveDir, "game_data.sav");
-      saveFilesPromises.push(readFile(path).then((data) => [path, data]));
+      const gameDataPath = resolve(dir, saveDir, "game_data.sav");
+      saveFilesPromises.push(
+        readFile(gameDataPath).then((data) => [gameDataPath, data])
+      );
+      const captionPath = resolve(dir, saveDir, "caption.sav");
+      saveFilesPromises.push(
+        readFile(captionPath).then((data) => [captionPath, data])
+      );
     }
 
     if (noSaveDirectories) {
@@ -256,10 +262,7 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
    * @param filename The filename to copy
    * @returns void resolving promise
    */
-  private async copyImage(
-    dir: "pict_book" | "album",
-    filename: string
-  ): Promise<void> {
+  private async copyImage(dir: string, filename: string): Promise<void> {
     const inputPath = resolve(this.inputDir, dir, filename);
     const outputPath = resolve(this.outputDir, dir, filename);
     return copyFile(inputPath, outputPath);
@@ -289,9 +292,11 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
 
     // Trigger buffers conversion
     const convertPromises: Promise<void>[] = [];
+    const saveFileDirs = new Set<string>();
 
     for (const [savePath, saveBuffer] of saveFiles) {
       convertPromises.push(this.convertAndSave(savePath, saveBuffer));
+      saveFileDirs.add(relative(this.inputDir, dirname(savePath)));
     }
 
     convertPromises.push(
@@ -300,6 +305,10 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
 
     // Trigger image copying
     const copyPromises: Promise<void>[] = [];
+
+    for (const saveFileDir of saveFileDirs) {
+      copyPromises.push(this.copyImage(saveFileDir, "caption.jpg"));
+    }
 
     await mkdir(resolve(this.outputDir, "pict_book"));
     const pictBookFiles = await readdir(resolve(this.inputDir, "pict_book"));

@@ -4,7 +4,11 @@
   "workspaces": [
     "packages/*"
   ],
+  "scripts": {
+    "test": "jest"
+  },
   "devDependencies": {
+    "jest": "^29.5.0",
     "lerna": "^6.6.2"
   }
 }

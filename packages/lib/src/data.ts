@@ -75,7 +75,6 @@ export const Items: string[] = [
   "Boko",
   "Brig",
   "DgnO",
-  "RomH",
 ];
 
 export const Hashes: number[] = [
@@ -86,5 +85,5 @@ export const Hashes: number[] = [
   0x2cadb0e7, 0xe7b0ad2c, 0xa6eb3ef4, 0xf43eeba6, 0x21d4cffa, 0xfacfd421,
   0x22a510d1, 0xd110a522, 0x98d10d53, 0x530dd198, 0x55a22047, 0x4720a255,
   0xe5a63a33, 0x333aa6e5, 0xbec65061, 0x6150c6be, 0xbc118370, 0x708311bc,
-  0x0e9d0e75, 0x750e9d0e, 0x96b647c2, 0xc247b696,
+  0x0e9d0e75, 0x750e9d0e,
 ];

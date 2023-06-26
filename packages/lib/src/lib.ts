@@ -61,10 +61,23 @@ export const convertSaveFile = (
   };
 
   let dontReverseNext = trackblock;
+  const reverseQueue: boolean[] = [];
 
   for (const [position, data] of getBytes(buffer)) {
     const dv = new DataView(data.buffer);
 
+    // This block is used to write items data using the reverseQueue array
+    if (reverseQueue.length > 0) {
+      const dontReverse = reverseQueue.pop();
+      if (dontReverse) {
+        write(dv, position);
+      } else {
+        reverseAndWrite(dv, position, data);
+      }
+      continue;
+    }
+
+    // Specific logic for trackblock files
     if (trackblock && position === 4) {
       const reversed = new Uint8Array([
         dv.getUint8(1),
@@ -79,12 +92,14 @@ export const convertSaveFile = (
 
     const dataUint32 = dv.getUint32(0);
 
+    // Conditional used when this 4 bytes shouldn't be reversed
     if (dontReverseNext) {
       dontReverseNext = false;
       write(dv, position);
       continue;
     }
 
+    // When a specific hash is found, the next 4 bytes are written as is
     if (Hashes.includes(dataUint32)) {
       reverseAndWrite(dv, position, data);
       dontReverseNext = true;
@@ -93,10 +108,13 @@ export const convertSaveFile = (
 
     const str = textDecoder.decode(data);
 
-    if (Items.includes(str)) {
-      write(dv, position);
-    } else {
+    if (!Items.includes(str)) {
       reverseAndWrite(dv, position, data);
+      continue;
+    } else {
+      // When an item is found, the next data blocks should be treated specially using the reverse queue
+      write(dv, position);
+      reverseQueue.push(...Array.from({ length: 16 }, (_, i) => i % 2 === 0));
     }
   }
 

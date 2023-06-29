@@ -121,6 +121,7 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
     }
 
     const saveFiles = await Promise.all(saveFilesPromises);
+    const saveTypes = new Set();
 
     for (const [path, saveFile] of saveFiles) {
       if (path.includes("trackblock")) {
@@ -128,8 +129,15 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
       }
 
       const { type, version } = getSaveType(saveFile);
+      saveTypes.add(type);
       this.verbose(
         `Found ${getPrettySaveType(type)} save file (${version}) in ${path}`
+      );
+    }
+
+    if (saveTypes.size > 1) {
+      this.error(
+        "Mixed save types. Please ensure there is only one type of save file in input directory."
       );
     }
 

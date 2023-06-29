@@ -62,7 +62,7 @@ EXAMPLES
   hello friend from oclif! (./src/commands/hello/index.ts)
 ```
 
-_See code: [dist/commands/hello/index.ts](https://github.com/ametis70/sheikah-translator/blob/v0.0.0/dist/commands/hello/index.ts)_
+_See code: [dist/commands/hello/index.ts](https://github.com/ametis70/sheikah-converter/blob/v0.0.0/dist/commands/hello/index.ts)_
 
 ## `sheikahcli hello world`
 

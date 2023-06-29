@@ -1,15 +1,15 @@
 {
-  "name": "@sheikah-translator/cli",
+  "name": "@sheikah-converter/cli",
   "version": "0.0.0",
   "description": "CLI to convert BotW save files between console formats",
   "author": "Ian Mancini @ametis70",
   "bin": {
     "sheikahcli": "./bin/run"
   },
-  "homepage": "https://github.com/ametis70/sheikah-translator",
+  "homepage": "https://github.com/ametis70/sheikah-converter",
   "license": "MIT",
   "main": "dist/index.js",
-  "repository": "ametis70/sheikah-translator",
+  "repository": "ametis70/sheikah-converter",
   "files": [
     "/bin",
     "/dist",
@@ -20,7 +20,7 @@
     "@oclif/core": "^2",
     "@oclif/plugin-help": "^5",
     "@oclif/plugin-plugins": "^2.4.7",
-    "@sheikah-translator/lib": "*"
+    "@sheikah-converter/lib": "*"
   },
   "devDependencies": {
     "@types/node": "^16.18.34",
@@ -58,7 +58,7 @@
   "engines": {
     "node": ">=12.0.0"
   },
-  "bugs": "https://github.com/ametis70/sheikah-translator/issues",
+  "bugs": "https://github.com/ametis70/sheikah-converter/issues",
   "keywords": [
     "oclif"
   ],

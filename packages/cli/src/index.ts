@@ -16,7 +16,7 @@ import {
   convertSaveFile,
   getSaveType,
   getPrettySaveType,
-} from "@sheikah-translator/lib";
+} from "@sheikah-converter/lib";
 
 export enum OutputDirectoryValidation {
   NOT_EXISTS,
@@ -103,13 +103,13 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
       );
     }
 
-    if (files.includes('tracker')) {
-      const trackblocks = await readdir(resolve(dir, 'tracker'));
+    if (files.includes("tracker")) {
+      const trackblocks = await readdir(resolve(dir, "tracker"));
 
       for (const trackblock of trackblocks) {
         noSaveDirectories = false;
 
-        const trackblockPath = resolve(dir, 'tracker', trackblock);
+        const trackblockPath = resolve(dir, "tracker", trackblock);
         saveFilesPromises.push(
           readFile(trackblockPath).then((data) => [trackblockPath, data])
         );
@@ -123,7 +123,7 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
     const saveFiles = await Promise.all(saveFilesPromises);
 
     for (const [path, saveFile] of saveFiles) {
-      if (path.includes('trackblock')) {
+      if (path.includes("trackblock")) {
         continue;
       }
 
@@ -267,7 +267,10 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
       await mkdir(dirPath, { recursive: true });
     }
 
-    const convertedBuffer = convertSaveFile(saveBuffer, savePath.includes('trackblock'));
+    const convertedBuffer = convertSaveFile(
+      saveBuffer,
+      savePath.includes("trackblock")
+    );
 
     await writeFile(outputPath, Buffer.from(convertedBuffer));
   }
@@ -316,7 +319,7 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
       saveFileDirs.add(relative(this.inputDir, dirname(savePath)));
     }
 
-    saveFileDirs.delete('tracker');
+    saveFileDirs.delete("tracker");
 
     convertPromises.push(
       this.convertAndSave(resolve(args.input, "option.sav"), optionFile)

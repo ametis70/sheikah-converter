@@ -1,5 +1,5 @@
 import { basename, dirname, relative, resolve } from "node:path";
-import { existsSync } from "node:fs";
+import { existsSync, Mode, MakeDirectoryOptions, PathLike } from "node:fs";
 import {
   copyFile,
   readdir,
@@ -49,6 +49,10 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
       char: "f",
       description: "Overwrite existing output directory",
     }),
+    dry: Flags.boolean({
+      char: "d",
+      description: "Dry run (do not write files)",
+    }),
     verbose: Flags.boolean({
       char: "v",
       description: "Print verbose output",
@@ -57,6 +61,8 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
 
   private _verbose = false;
   private _force = false;
+  private _dry = false;
+  private _dryDirectorySet = new Set();
 
   private inputDir = "";
   private outputDir = "";
@@ -145,6 +151,32 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
   }
 
   /**
+   * Wrapper function for mkdir to allow skipping directories when dry flag is on
+   *
+   * @param path The path to create
+   * @param options The options to pass to mkdir
+   */
+  private async createDirectory(
+    path: PathLike,
+    options?: Mode | MakeDirectoryOptions | null
+  ): Promise<string | undefined> {
+    if (this._dry) {
+      if (this._dryDirectorySet.has(path.toString())) {
+        return;
+      }
+      this._dryDirectorySet.add(path.toString());
+      this.log(`Should create directory "${path}"`);
+      return;
+    }
+
+    if (this._verbose) {
+      this.log(`Creating directory "${path}"`);
+    }
+
+    return mkdir(path, options);
+  }
+
+  /**
    * Function to load option.sav file from target directory
    *
    * @param dir The directory to load save files from
@@ -218,7 +250,7 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
 
     if (await ux.confirm(`Remove ${this.outputDir}?`)) {
       await rm(this.outputDir, { force: true, recursive: true });
-      await mkdir(this.outputDir);
+      await this.createDirectory(this.outputDir);
     } else {
       this.exit(1);
     }
@@ -235,7 +267,7 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
     switch (outputValidation) {
       case OutputDirectoryValidation.NOT_EXISTS:
         this.verbose(`Creating dir "${this.outputDir}"`);
-        await mkdir(this.outputDir);
+        await this.createDirectory(this.outputDir);
         break;
 
       case OutputDirectoryValidation.NOT_DIR:
@@ -255,13 +287,13 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
   }
 
   /**
-   * Convert and save the save file to the output directory
+   * Convert and write the save file to the output directory
    *
    * @param savePath The path to the save file
    * @param saveBuffer The buffer of the original save file
    * @returns void resolving promise
    */
-  private async convertAndSave(
+  private async convertAndWrite(
     savePath: string,
     saveBuffer: ArrayBufferLike
   ): Promise<void> {
@@ -272,7 +304,16 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
     const outputPath = resolve(this.outputDir, directoryName, fileName);
 
     if (!existsSync(dirPath)) {
-      await mkdir(dirPath, { recursive: true });
+      await this.createDirectory(dirPath, { recursive: true });
+    }
+
+    if (this._dry) {
+      this.log(`Should convert and write "${savePath}" to "${outputPath}"`);
+      return;
+    }
+
+    if (this._verbose) {
+      this.verbose(`Converting "${savePath}"`);
     }
 
     const convertedBuffer = convertSaveFile(
@@ -280,7 +321,11 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
       savePath.includes("trackblock")
     );
 
-    await writeFile(outputPath, Buffer.from(convertedBuffer));
+    if (this._verbose) {
+      this.verbose(`Writing "${savePath}" to "${outputPath}"`);
+    }
+
+    return writeFile(outputPath, Buffer.from(convertedBuffer));
   }
 
   /**
@@ -293,6 +338,14 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
   private async copyImage(dir: string, filename: string): Promise<void> {
     const inputPath = resolve(this.inputDir, dir, filename);
     const outputPath = resolve(this.outputDir, dir, filename);
+    if (this._dry) {
+      this.log(`Should copy "${inputPath}" to "${outputPath}"`);
+      return;
+    }
+
+    if (this._verbose) {
+      this.verbose(`Copying "${inputPath}" to "${outputPath}"`);
+    }
     return copyFile(inputPath, outputPath);
   }
 
@@ -301,10 +354,16 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
 
     if (flags.verbose) {
       this._verbose = true;
+      this.log("Verbose output enabled");
     }
 
     if (flags.force) {
       this._force = true;
+    }
+
+    if (flags.dry) {
+      this._dry = true;
+      this.log("Running in dry mode");
     }
 
     this.outputDir =
@@ -323,14 +382,14 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
     const saveFileDirs = new Set<string>();
 
     for (const [savePath, saveBuffer] of saveFiles) {
-      convertPromises.push(this.convertAndSave(savePath, saveBuffer));
+      convertPromises.push(this.convertAndWrite(savePath, saveBuffer));
       saveFileDirs.add(relative(this.inputDir, dirname(savePath)));
     }
 
     saveFileDirs.delete("tracker");
 
     convertPromises.push(
-      this.convertAndSave(resolve(args.input, "option.sav"), optionFile)
+      this.convertAndWrite(resolve(args.input, "option.sav"), optionFile)
     );
 
     // Trigger image copying
@@ -340,13 +399,13 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
       copyPromises.push(this.copyImage(saveFileDir, "caption.jpg"));
     }
 
-    await mkdir(resolve(this.outputDir, "pict_book"));
+    await this.createDirectory(resolve(this.outputDir, "pict_book"));
     const pictBookFiles = await readdir(resolve(this.inputDir, "pict_book"));
     for (const imageName of pictBookFiles) {
       copyPromises.push(this.copyImage("pict_book", imageName));
     }
 
-    await mkdir(resolve(this.outputDir, "album"));
+    await this.createDirectory(resolve(this.outputDir, "album"));
     const albumFiles = await readdir(resolve(this.inputDir, "album"));
     for (const imageName of albumFiles) {
       copyPromises.push(this.copyImage("album", imageName));

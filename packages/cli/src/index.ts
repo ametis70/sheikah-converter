@@ -155,6 +155,8 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
    *
    * @param path The path to create
    * @param options The options to pass to mkdir
+   *
+   * @returns A promise that resolves to the path of the created directory or undefined if it failed
    */
   private async createDirectory(
     path: PathLike,
@@ -164,6 +166,7 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
       if (this._dryDirectorySet.has(path.toString())) {
         return;
       }
+
       this._dryDirectorySet.add(path.toString());
       this.log(`Should create directory "${path}"`);
       return;
@@ -346,6 +349,7 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
     if (this._verbose) {
       this.verbose(`Copying "${inputPath}" to "${outputPath}"`);
     }
+
     return copyFile(inputPath, outputPath);
   }
 

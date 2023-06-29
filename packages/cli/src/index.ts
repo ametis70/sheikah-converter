@@ -25,7 +25,7 @@ export enum OutputDirectoryValidation {
   DIR_NOT_EMPTY,
 }
 
-export class Convert extends Command {
+export class CLI extends Command {
   static summary = "Converts a BotW saves";
   static description = `This program converts a BotW save directory to from one console format to another.
 
@@ -354,7 +354,7 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
   }
 
   async run(): Promise<void> {
-    const { args, flags } = await this.parse(Convert);
+    const { args, flags } = await this.parse(CLI);
 
     if (flags.verbose) {
       this._verbose = true;

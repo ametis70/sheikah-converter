@@ -41,8 +41,8 @@
     "typescript": "^4.9.5"
   },
   "oclif": {
-    "bin": "sheikahcli",
-    "dirname": "sheikahcli",
+    "bin": "botwc",
+    "dirname": "botwc",
     "commands": "./dist",
     "default": ".",
     "plugins": [

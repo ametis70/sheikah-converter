@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 export const arrToHex = (arr: Uint8Array) => {
   return (
     Buffer.from(arr)

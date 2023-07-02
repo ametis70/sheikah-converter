@@ -59,6 +59,32 @@ describe("botwc CLI", () => {
     expect(fsSync.existsSync(path.resolve(outDir, "0", "game_data.sav"))).toBe(true);
     expect(fsSync.existsSync(path.resolve(outDir, "0", "caption.sav"))).toBe(true);
     expect(fsSync.existsSync(path.resolve(outDir, "tracker", "trackblock00.sav"))).toBe(true);
+    expect(stdout.output).toEqual("Finished!\n")
+  });
 
+  it("Should print more information when verbose output is enabled", async () => {
+    const outDir = await fs.mkdtemp(path.resolve(os.tmpdir(), `sc-out-`));
+    await CLI.run([wiiUDir, outDir, '-v']);
+
+    const lines = stdout.output.split("\n")
+
+    expect(lines.splice(lines.findIndex(l => l === "Verbose output enabled"), 1)).toBeTruthy();
+    expect(lines.splice(lines.findIndex(l => l === `Using existing empty dir "${outDir}"`), 1)).toBeTruthy();
+    expect(lines.splice(lines.findIndex(l => l === `Found Wii U save file (v1.5) in ${path.resolve(wiiUDir, "0", "game_data.sav")}`), 1)).toBeTruthy();
+    expect(lines.splice(lines.findIndex(l => l === `Found Wii U save file (v1.5) in ${path.resolve(wiiUDir, "0", "caption.sav")}`), 1)).toBeTruthy();
+    expect(lines.splice(lines.findIndex(l => l === `Found Wii U option file (v1.5) in ${path.resolve(wiiUDir, "option.sav")}`), 1)).toBeTruthy();
+    expect(lines.splice(lines.findIndex(l => l === `Creating directory "${path.resolve(outDir, "0")}"`), 1)).toBeTruthy();
+    expect(lines.splice(lines.findIndex(l => l === `Creating directory "${path.resolve(outDir, "tracker")}"`), 1)).toBeTruthy();
+    expect(lines.splice(lines.findIndex(l => l === `Converting "${path.resolve(wiiUDir, "option.sav")}"`), 1)).toBeTruthy();
+    expect(lines.splice(lines.findIndex(l => l === `Writing "${path.resolve(wiiUDir, "option.sav")}" to "${path.resolve(outDir, "option.sav")}"`), 1)).toBeTruthy();
+    expect(lines.splice(lines.findIndex(l => l === `Copying "${path.resolve(wiiUDir, "0", "caption.jpg")}" to "${path.resolve(outDir, "0", "caption.jpg")}"`), 1)).toBeTruthy();
+    expect(lines.splice(lines.findIndex(l => l === `File "${path.resolve(wiiUDir, "0", "caption.jpg")}" does not exist"`), 1)).toBeTruthy();
+    expect(lines.splice(lines.findIndex(l => l === `Converting "${path.resolve(wiiUDir, "0", "caption.sav")}"`), 1)).toBeTruthy();
+    expect(lines.splice(lines.findIndex(l => l === `Writing "${path.resolve(wiiUDir, "0", "caption.sav")}" to "${path.resolve(outDir, "0", "caption.sav")}"`), 1)).toBeTruthy();
+    expect(lines.splice(lines.findIndex(l => l === `Converting "${path.resolve(wiiUDir, "tracker", "trackblock00.sav")}"`), 1)).toBeTruthy();
+    expect(lines.splice(lines.findIndex(l => l === `Writing "${path.resolve(wiiUDir, "tracker", "trackblock00.sav")}" to "${path.resolve(outDir, "tracker", "trackblock00.sav")}"`), 1)).toBeTruthy();
+    expect(lines.splice(lines.findIndex(l => l === `Converting "${path.resolve(wiiUDir, "0", "game_data.sav")}"`), 1)).toBeTruthy();
+    expect(lines.splice(lines.findIndex(l => l === `Writing "${path.resolve(wiiUDir, "0", "game_data.sav")}" to "${path.resolve(outDir, "0", "game_data.sav")}"`), 1)).toBeTruthy();
+    expect(lines.splice(lines.findIndex(l => l === `Finished!`), 1)).toBeTruthy();
   });
 });

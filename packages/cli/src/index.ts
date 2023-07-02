@@ -25,6 +25,17 @@ export enum OutputDirectoryValidation {
   DIR_NOT_EMPTY,
 }
 
+/**
+ * Generate a filename for the output directory based on the current date and time
+ * @returns string in the form of botw-YYYY-MM-DD_HH-MM-SS
+ */
+export const generateOutputDirFilename = (): string => `botw-${new Date()
+  .toISOString()
+  .slice(0, 19)
+  .replace("T", "_")
+  .replace(/:/g, "-")}`;
+
+
 export class CLI extends Command {
   static summary = "Converts a BotW saves";
   static description = `This program converts a BotW save directory to from one console format to another.
@@ -230,18 +241,6 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
   }
 
   /**
-   * Generate a filename for the output directory based on the current date and time
-   * @returns string in the form of botw-YYYY-MM-DD_HH-MM-SS
-   */
-  private generateOutputDirFilename(): string {
-    return `botw-${new Date()
-      .toISOString()
-      .slice(0, 19)
-      .replace("T", "_")
-      .replace(/:/g, "-")}`;
-  }
-
-  /**
    * This will prompt to remove the output directory if force is true
    *
    * @returns void
@@ -350,6 +349,11 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
       this.verbose(`Copying "${inputPath}" to "${outputPath}"`);
     }
 
+    if (!existsSync(inputPath)) {
+      this.verbose(`File "${inputPath}" does not exist"`);
+      return;
+    }
+
     return copyFile(inputPath, outputPath);
   }
 
@@ -371,7 +375,7 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
     }
 
     this.outputDir =
-      args.output ?? resolve(process.cwd(), this.generateOutputDirFilename());
+      args.output ?? resolve(process.cwd(), generateOutputDirFilename());
 
     this.inputDir = args.input;
 
@@ -403,16 +407,22 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
       copyPromises.push(this.copyImage(saveFileDir, "caption.jpg"));
     }
 
-    await this.createDirectory(resolve(this.outputDir, "pict_book"));
-    const pictBookFiles = await readdir(resolve(this.inputDir, "pict_book"));
-    for (const imageName of pictBookFiles) {
-      copyPromises.push(this.copyImage("pict_book", imageName));
+    const inputPictBookDir = resolve(this.inputDir, "pict_book")
+    if (existsSync(inputPictBookDir)) {
+      await this.createDirectory(resolve(this.outputDir, "pict_book"));
+      const pictBookFiles = await readdir(inputPictBookDir);
+      for (const imageName of pictBookFiles) {
+        copyPromises.push(this.copyImage("pict_book", imageName));
+      }
     }
 
-    await this.createDirectory(resolve(this.outputDir, "album"));
-    const albumFiles = await readdir(resolve(this.inputDir, "album"));
-    for (const imageName of albumFiles) {
-      copyPromises.push(this.copyImage("album", imageName));
+    const inputAlbumDir = resolve(this.inputDir, "album")
+    if (existsSync(inputPictBookDir)) {
+      await this.createDirectory(resolve(this.outputDir, "album"));
+      const albumFiles = await readdir(inputAlbumDir);
+      for (const imageName of albumFiles) {
+        copyPromises.push(this.copyImage("album", imageName));
+      }
     }
 
     // Wait for all to finish

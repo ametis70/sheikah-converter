@@ -2,7 +2,7 @@ import { mkdtemp, copyFile, readdir, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { tmpdir } from "node:os";
 
-async function copyDir(src: string, dest: string) {
+const copyDir = async (src: string, dest: string) => {
   await mkdir(dest, { recursive: true });
   const entries = await readdir(src, { withFileTypes: true });
 
@@ -16,7 +16,7 @@ async function copyDir(src: string, dest: string) {
       ? await copyDir(srcPath, destPath)
       : await copyFile(srcPath, destPath);
   }
-}
+};
 
 export const getTempSaveDir = async (
   type: "wiiu" | "switch"

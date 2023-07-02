@@ -87,4 +87,18 @@ describe("botwc CLI", () => {
     expect(lines.splice(lines.findIndex(l => l === `Writing "${path.resolve(wiiUDir, "0", "game_data.sav")}" to "${path.resolve(outDir, "0", "game_data.sav")}"`), 1)).toBeTruthy();
     expect(lines.splice(lines.findIndex(l => l === `Finished!`), 1)).toBeTruthy();
   });
+
+  it("Shouldn't create files when dry mode is enabled", async () => {
+    const outDir = await fs.mkdtemp(path.resolve(os.tmpdir(), `sc-out-`));
+    await CLI.run([wiiUDir, outDir, '-d']);
+
+    stdout.stop();
+    const lines = stdout.output.split("\n")
+
+    expect(lines.filter(Boolean).every((l) => l === 'Running in dry mode' || l.includes('Should') || l === 'Finished!')).toBeTruthy();
+
+    const outFiles = await fs.readdir(outDir);
+    expect(outFiles.length).toBe(0);
+
+  });
 });

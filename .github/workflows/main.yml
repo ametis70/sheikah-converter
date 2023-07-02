@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - coverage-ci
 
 env:
   GIST_ID: 1e9d8b2af65d638f46cae48dbf282807

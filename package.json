@@ -5,6 +5,8 @@
     "packages/*"
   ],
   "scripts": {
+    "lint": "lerna run lint",
+    "build": "lerna run build",
     "test": "jest"
   },
   "devDependencies": {

@@ -7,10 +7,12 @@
   "scripts": {
     "lint": "lerna run lint",
     "build": "lerna run build",
-    "test": "jest"
+    "test": "jest",
+    "test:ci": "jest --ci --reporters='jest-junit'"
   },
   "devDependencies": {
     "jest": "^29.5.0",
+    "jest-junit": "^16.0.0",
     "lerna": "^6.6.2"
   }
 }

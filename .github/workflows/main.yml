@@ -1,0 +1,28 @@
+name: main
+
+on:
+  push:
+    branches:
+      - main
+      - coverage-ci
+
+env:
+  GIST_ID: 1e9d8b2af65d638f46cae48dbf282807
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm run test:ci
+      - uses: gaelgirodon/ci-badges-action@v1
+        with:
+          gist-id: ${{ env.GIST_ID }}
+          token: ${{ secrets.GIST_TOKEN }}

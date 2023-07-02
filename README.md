@@ -2,6 +2,12 @@
 
 # Sheikah Converter
 
+![version](https://img.shields.io/github/package-json/v/ametis70/sheikah-converter?style=flat-square&filename=packages/lib/package.json)
+![license](https://img.shields.io/github/license/ametis70/sheikah-converter?style=flat-square)
+![build](https://img.shields.io/github/actions/workflow/status/ametis70/sheikah-converter/main.yml?branch=main&style=flat-square)
+![tests](https://img.shields.io/endpoint?style=flat-square&url=https://gist.githubusercontent.com/ametis70/1e9d8b2af65d638f46cae48dbf282807/raw/f6ea31f4fad533724e887355ddd92c1011fce453/sheikah-converter-junit-tests.json)
+![coverage](https://img.shields.io/endpoint?style=flat-square&url=https://gist.githubusercontent.com/ametis70/1e9d8b2af65d638f46cae48dbf282807/raw/f6ea31f4fad533724e887355ddd92c1011fce453/sheikah-converter-cobertura-coverage.json)
+
 The Sheikah Converter is a TypeScript project that comprises a library and a CLI tool to convert<br />
 **The Legend of Zelda: Breath of the Wild** save files between console formats (Wii U <-> Switch)
 

@@ -2,6 +2,10 @@
 
 > Library to convert The Legend of Zelda: Breath of the Wild game saves between console formats (Wii U to Switch and viceversa)
 
+## Installation
+
+`npm install @sheikah-converter/lib`
+
 ## Usage (Node.js)
 
 ```ts

@@ -2,6 +2,16 @@
 
 > CLI to convert The Legend of Zelda: Breath of the Wild game saves between console formats (Wii U to Switch and viceversa)
 
+## Installation
+
+`npm install -g @sheikah-converter/cli`
+
+> **NOTE**
+> Even if the package name is `@sheikah-converter/cli`, the executable is called `botwc`
+
+> **NOTE**
+> The cli can be used "without installing" it globally using `npx @sheikah-converter/cli`
+
 ## Usage
 
 ```

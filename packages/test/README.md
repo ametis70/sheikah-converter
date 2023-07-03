@@ -1,6 +1,13 @@
 # `@sheikah-converter/test`
 
-> Test utilities and data to use in other packages
+> Test utilities and data to use in other packages from Sheikah Converter
+
+## Instalation
+
+`npm install @sheikah-converter/test`
+
+> **NOTE**
+> This package is meant to be used by other packages from Sheikah Converter, but it's generic enough to be used anywhere that could need (incomplete) BotW save files
 
 ## API
 
@@ -18,9 +25,9 @@ This function will copy a save directory to a temporary directory to make it ava
 
 Recursively copy directory
 
-| Parameter | Description               | Required | Default |
-| --------- | ------------------------- | -------- | ------- |
-| `src`     | Path of directory to copy         | `true`   |         |
+| Parameter | Description                             | Required | Default |
+| --------- | --------------------------------------- | -------- | ------- |
+| `src`     | Path of directory to copy               | `true`   |         |
 | `dest`    | Destionation path to copy the directory | `true`   |         |
 
 ##### `createEmptyFile(path) -> Promise<void>`

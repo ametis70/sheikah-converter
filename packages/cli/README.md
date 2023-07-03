@@ -5,7 +5,7 @@
 ## Usage
 
 ```
-Converts a BotW saves
+Convert a BotW save
 
 USAGE
   $ botwc INPUT [OUTPUT] [-f] [-d] [-c] [-v]
@@ -27,7 +27,8 @@ DESCRIPTION
 
   This works with Wii U and Switch saves up to version 1.6 of the game.
 
-  Version 1.5 and 1.6 are compatible and should work interchangeably on both platforms.```
+  Version 1.5 and 1.6 are compatible and should work interchangeably on both platforms.
+```
 
 ## Example
 

@@ -26,7 +26,7 @@ export enum OutputDirectoryValidation {
 }
 
 export class CLI extends Command {
-  static summary = "Converts a BotW saves";
+  static summary = "Converts a BotW save";
   static description = `This program converts a BotW save directory to from one console format to another.
 
 This works with Wii U and Switch saves up to version 1.6 of the game.

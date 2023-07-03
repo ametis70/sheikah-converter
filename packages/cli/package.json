@@ -1,6 +1,6 @@
 {
   "name": "@sheikah-converter/cli",
-  "version": "0.0.0",
+  "version": "1.0.0-alpha.0",
   "description": "CLI to convert BotW save files between console formats",
   "author": "Ian Mancini",
   "bin": {
@@ -20,7 +20,7 @@
     "@oclif/core": "^2",
     "@oclif/plugin-help": "^5",
     "@oclif/plugin-plugins": "^2.4.7",
-    "@sheikah-converter/lib": "*"
+    "@sheikah-converter/lib": "^1.0.0-alpha.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.2",

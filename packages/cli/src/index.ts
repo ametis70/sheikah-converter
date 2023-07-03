@@ -25,17 +25,6 @@ export enum OutputDirectoryValidation {
   DIR_NOT_EMPTY,
 }
 
-/**
- * Generate a filename for the output directory based on the current date and time
- * @returns string in the form of botw-YYYY-MM-DD_HH-MM-SS
- */
-export const generateOutputDirFilename = (): string => `botw-${new Date()
-  .toISOString()
-  .slice(0, 19)
-  .replace("T", "_")
-  .replace(/:/g, "-")}`;
-
-
 export class CLI extends Command {
   static summary = "Converts a BotW saves";
   static description = `This program converts a BotW save directory to from one console format to another.
@@ -83,13 +72,24 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
    * @param args Arguments to pass to log function
    * @returns void
    */
-  verbose(...args: any[]): void {
+  private verbose(...args: any[]): void {
     if (!this._verbose) {
       return;
     }
 
     this.log(...args);
   }
+
+  /**
+   * Generate a filename for the output directory based on the current date and time
+   * @returns string in the form of botw-YYYY-MM-DD_HH-MM-SS
+   */
+  private generateOutputDirName = (): string =>
+    `botw-${new Date()
+      .toISOString()
+      .slice(0, 19)
+      .replace("T", "_")
+      .replace(/:/g, "-")}`;
 
   /**
    * Function to load game_data.sav files from target directory
@@ -375,7 +375,7 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
     }
 
     this.outputDir =
-      args.output ?? resolve(process.cwd(), generateOutputDirFilename());
+      args.output ?? resolve(process.cwd(), this.generateOutputDirName());
 
     this.inputDir = args.input;
 
@@ -407,7 +407,7 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
       copyPromises.push(this.copyImage(saveFileDir, "caption.jpg"));
     }
 
-    const inputPictBookDir = resolve(this.inputDir, "pict_book")
+    const inputPictBookDir = resolve(this.inputDir, "pict_book");
     if (existsSync(inputPictBookDir)) {
       await this.createDirectory(resolve(this.outputDir, "pict_book"));
       const pictBookFiles = await readdir(inputPictBookDir);
@@ -416,7 +416,7 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
       }
     }
 
-    const inputAlbumDir = resolve(this.inputDir, "album")
+    const inputAlbumDir = resolve(this.inputDir, "album");
     if (existsSync(inputPictBookDir)) {
       await this.createDirectory(resolve(this.outputDir, "album"));
       const albumFiles = await readdir(inputAlbumDir);

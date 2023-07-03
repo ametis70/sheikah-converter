@@ -489,5 +489,25 @@ describe("botwc CLI", () => {
     }
   });
 
-  // Test that fails when the input directory contains mixed save types
+  it("Should fail when mixed save types exist in input directory", async () => {
+    const outDir = await fs.mkdtemp(path.resolve(os.tmpdir(), `sc-out-`));
+    const modifiedInputDir = await fs.mkdtemp(
+      path.resolve(os.tmpdir(), `sc-input-`)
+    );
+    await copyDir(wiiUDir, modifiedInputDir);
+
+    const switchSaveSlot = path.resolve(modifiedInputDir, "1");
+    await copyDir(path.resolve(switchDir, "0"), switchSaveSlot);
+
+    try {
+      await CLI.run([modifiedInputDir, outDir]);
+    } catch (e: any) {
+      stdout.stop();
+      stderr.stop();
+
+      expect((e as Error).message).toBe(
+        "Mixed save types. Please ensure there is only one type of save file in input directory."
+      );
+    }
+  });
 });

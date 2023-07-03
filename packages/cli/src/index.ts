@@ -275,11 +275,13 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
           `Output path "${this.outputDir}" exists but is not a directory`
         );
         await this.handleForceFlag();
+        /* istanbul ignore next */
         break;
 
       case OutputDirectoryValidation.DIR_NOT_EMPTY:
         this.log(`Output path "${this.outputDir}" exists but is not empty`);
         await this.handleForceFlag();
+        /* istanbul ignore next */
         break;
 
       case OutputDirectoryValidation.DIR_EMPTY:

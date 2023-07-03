@@ -3,6 +3,7 @@ import fsSync from "node:fs";
 import path from "node:path";
 import os from "node:os";
 
+import { ux } from "@oclif/core";
 import { stdout, stderr } from "stdout-stderr";
 
 import {
@@ -447,9 +448,46 @@ describe("botwc CLI", () => {
     }
   });
 
-  // Test that copy image files from input directory
-
   // Test that is run with force flag
+  it("Should fail when the output path is not empty", async () => {
+    const outDir = await fs.mkdtemp(path.resolve(os.tmpdir(), `sc-out-`));
+    const file = path.resolve(outDir, "test");
+
+    jest
+      .spyOn(ux, "confirm")
+      .mockImplementationOnce(() => new Promise((resolve) => resolve(true)));
+
+    await createEmptyFile(file);
+
+    await CLI.run([wiiUDir, outDir, "-f"]);
+
+    stdout.stop();
+    stderr.stop();
+
+    const lines = stdout.output.split("\n");
+
+    expect(lines[0]).toBe(`Output path "${outDir}" exists but is not empty`);
+    expect(lines[1]).toBe("Finished!");
+  });
+
+  it("Should exit when -f flag is passed but the deletion is not confirmed", async () => {
+    const outDir = await fs.mkdtemp(path.resolve(os.tmpdir(), `sc-out-`));
+    const file = path.resolve(outDir, "test");
+
+    jest
+      .spyOn(ux, "confirm")
+      .mockImplementationOnce(() => new Promise((resolve) => resolve(false)));
+
+    await createEmptyFile(file);
+
+    try {
+      await CLI.run([wiiUDir, outDir, "-f"]);
+    } catch (e: any) {
+      stdout.stop();
+      stderr.stop();
+      expect((e as Error).message).toBe(`EEXIT: 1`);
+    }
+  });
 
   // Test that fails when the input directory contains mixed save types
 });

@@ -518,4 +518,31 @@ describe("botwc CLI", () => {
       );
     }
   });
+
+  it("Should print save type and exit when check flag is used", async () => {
+    const outDir = await fs.mkdtemp(path.resolve(os.tmpdir(), `sc-out-`));
+
+    try {
+      await CLI.run([wiiUDir, outDir, "-c"]);
+    } catch (e: any) {
+      expect((e as Error).message).toBe("EEXIT: 0");
+    }
+
+    try {
+      await CLI.run([switchDir, outDir, "-c"]);
+    } catch (e: any) {
+      expect((e as Error).message).toBe("EEXIT: 0");
+    }
+
+    stdout.stop();
+    stderr.stop();
+
+    const lines = stdout.output.split("\n");
+
+    expect(lines[0]).toBe(`Wii U`);
+    expect(lines[1]).toBe(`Switch`);
+
+    const dirContents = await fs.readdir(outDir);
+    expect(dirContents).toHaveLength(0);
+  });
 });

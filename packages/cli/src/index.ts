@@ -394,7 +394,9 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
       this.error(`Input path "${this.inputDir}" is not a directory`);
     }
 
-    await this.validateAndCreateOutputDirectory();
+    if (!this._check) {
+      await this.validateAndCreateOutputDirectory();
+    }
 
     // Read and validate save files
     const saveFiles = await this.getSaveFiles(args.input);

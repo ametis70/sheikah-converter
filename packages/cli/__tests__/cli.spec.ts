@@ -40,7 +40,15 @@ describe("botwc CLI", () => {
   });
 
   it("Should fail if no input directory is provided", async () => {
-    expect(CLI.run([])).rejects.toThrow();
+    try {
+      await CLI.run([]);
+    } catch (e: any) {
+      stdout.stop();
+      stderr.stop();
+      expect(
+        (e as Error).message.includes("Missing 1 required arg")
+      ).toBeTruthy();
+    }
   });
 
   it("Should convert and copy the new files correctly", async () => {

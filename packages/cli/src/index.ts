@@ -120,21 +120,19 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
       );
     }
 
+    if (noSaveDirectories) {
+      this.error(`Missing save slot directories or files in "${dir}"`);
+    }
+
     if (files.includes("tracker")) {
       const trackblocks = await readdir(resolve(dir, "tracker"));
 
       for (const trackblock of trackblocks) {
-        noSaveDirectories = false;
-
         const trackblockPath = resolve(dir, "tracker", trackblock);
         saveFilesPromises.push(
           readFile(trackblockPath).then((data) => [trackblockPath, data])
         );
       }
-    }
-
-    if (noSaveDirectories) {
-      this.error("Missing save directories files");
     }
 
     const saveFiles = await Promise.all(saveFilesPromises);
@@ -200,7 +198,7 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
     const files = await readdir(dir);
 
     if (!files.includes("option.sav")) {
-      throw new Error(`No options.sav file found in ${dir}`);
+      throw new Error(`No options.sav file found in "${dir}"`);
     }
 
     const path = resolve(dir, "option.sav");

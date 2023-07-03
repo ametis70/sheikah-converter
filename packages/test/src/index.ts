@@ -2,7 +2,7 @@ import { mkdtemp, copyFile, readdir, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { tmpdir } from "node:os";
 
-const copyDir = async (src: string, dest: string) => {
+export const copyDir = async (src: string, dest: string) => {
   await mkdir(dest, { recursive: true });
   const entries = await readdir(src, { withFileTypes: true });
 

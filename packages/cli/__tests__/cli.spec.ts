@@ -5,7 +5,7 @@ import os from "node:os";
 
 import { stdout, stderr } from "stdout-stderr";
 
-import { getTempSaveDir } from "@sheikah-converter/test";
+import { copyDir, getTempSaveDir } from "@sheikah-converter/test";
 import { getSaveType, SaveType } from "@sheikah-converter/lib";
 
 import { CLI } from "../src";
@@ -58,15 +58,15 @@ describe("botwc CLI", () => {
 
     expect(convertedType).toBe(SaveType.Switch);
 
-    expect(fsSync.existsSync(path.resolve(outDir, "0", "game_data.sav"))).toBe(
-      true
-    );
-    expect(fsSync.existsSync(path.resolve(outDir, "0", "caption.sav"))).toBe(
-      true
-    );
+    expect(
+      fsSync.existsSync(path.resolve(outDir, "0", "game_data.sav"))
+    ).toBeTruthy();
+    expect(
+      fsSync.existsSync(path.resolve(outDir, "0", "caption.sav"))
+    ).toBeTruthy();
     expect(
       fsSync.existsSync(path.resolve(outDir, "tracker", "trackblock00.sav"))
-    ).toBe(true);
+    ).toBeTruthy();
     expect(stdout.output).toEqual("Finished!\n");
   });
 
@@ -288,8 +288,8 @@ describe("botwc CLI", () => {
         .filter(Boolean)
         .every(
           (l) =>
-            l === "Running in dry mode" ||
             l.includes("Should") ||
+            l === "Running in dry mode" ||
             l === "Finished!"
         )
     ).toBeTruthy();
@@ -312,4 +312,54 @@ describe("botwc CLI", () => {
       `Should create directory "${outDir}/botw-1970-01-01_00-00-00"`
     );
   });
+
+  // Test that fails when no game_data.sav files exist in the input directory
+  it("Should fail when no game_data.sav files exist in the input directory", async () => {
+    const outDir = await fs.mkdtemp(path.resolve(os.tmpdir(), `sc-out-`));
+    const modifiedInputDir = await fs.mkdtemp(
+      path.resolve(os.tmpdir(), `sc-input-`)
+    );
+
+    await copyDir(wiiUDir, modifiedInputDir);
+    await fs.rm(path.resolve(modifiedInputDir, "0"), { recursive: true });
+
+    try {
+      await CLI.run([modifiedInputDir, outDir]);
+    } catch (e: any) {
+      stdout.stop();
+      stderr.stop();
+      expect(e.message).toBe(
+        `Missing save slot directories or files in "${modifiedInputDir}"`
+      );
+    }
+  });
+
+  // Test that fails when no option.sav file exist in the input directory
+  it("Should fail when no option.sav file exist in the input directory", async () => {
+    const outDir = await fs.mkdtemp(path.resolve(os.tmpdir(), `sc-out-`));
+    const modifiedInputDir = await fs.mkdtemp(
+      path.resolve(os.tmpdir(), `sc-input-`)
+    );
+
+    await copyDir(wiiUDir, modifiedInputDir);
+    await fs.rm(path.resolve(modifiedInputDir, "option.sav"));
+
+    try {
+      await CLI.run([modifiedInputDir, outDir]);
+    } catch (e: any) {
+      stdout.stop();
+      stderr.stop();
+      expect(e.message).toBe(
+        `No options.sav file found in "${modifiedInputDir}"`
+      );
+    }
+  });
+
+  // Test that fails when the input directory is not a directory
+
+  // Test that copy image files from input directory
+
+  // Test that is run with force flag
+
+  // Test that fails when the input directory contains mixed save types
 });

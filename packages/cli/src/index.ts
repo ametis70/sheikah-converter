@@ -271,12 +271,14 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
         break;
 
       case OutputDirectoryValidation.NOT_DIR:
-        this.warn(`"${this.outputDir}" exists but is not a directory`);
+        this.log(
+          `Output path "${this.outputDir}" exists but is not a directory`
+        );
         await this.handleForceFlag();
         break;
 
       case OutputDirectoryValidation.DIR_NOT_EMPTY:
-        this.warn(`"${this.outputDir}" exists but is not empty`);
+        this.log(`Output path "${this.outputDir}" exists but is not empty`);
         await this.handleForceFlag();
         break;
 
@@ -376,6 +378,15 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
       args.output ?? resolve(process.cwd(), this.generateOutputDirName());
 
     this.inputDir = args.input;
+
+    if (!existsSync(this.inputDir)) {
+      this.error(`Input path "${this.inputDir}" does not exist`);
+    }
+
+    const stat = await lstat(this.inputDir);
+    if (!stat.isDirectory()) {
+      this.error(`Input path "${this.inputDir}" is not a directory`);
+    }
 
     await this.validateAndCreateOutputDirectory();
 

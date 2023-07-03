@@ -74,6 +74,31 @@ describe("botwc CLI", () => {
     expect(stdout.output).toEqual("Finished!\n");
   });
 
+  it("Should copy images if they exist", async () => {
+    const outDir = await fs.mkdtemp(path.resolve(os.tmpdir(), `sc-out-`));
+    const modifiedInputDir = await fs.mkdtemp(
+      path.resolve(os.tmpdir(), `sc-input-`)
+    );
+    await copyDir(wiiUDir, modifiedInputDir);
+
+    const pictBookDir = path.resolve(modifiedInputDir, "pict_book");
+    await fs.mkdir(pictBookDir);
+    await createEmptyFile(path.resolve(pictBookDir, "AncientArrow.jpg"));
+
+    const albumDir = path.resolve(modifiedInputDir, "album");
+    await fs.mkdir(albumDir);
+    await createEmptyFile(path.resolve(albumDir, "pict_000.jpg"));
+
+    await CLI.run([modifiedInputDir, outDir]);
+
+    expect(
+      fsSync.existsSync(path.resolve(outDir, "pict_book", "AncientArrow.jpg"))
+    ).toBeTruthy();
+    expect(
+      fsSync.existsSync(path.resolve(outDir, "album", "pict_000.jpg"))
+    ).toBeTruthy();
+  });
+
   it("Should print more information when verbose output is enabled", async () => {
     const outDir = await fs.mkdtemp(path.resolve(os.tmpdir(), `sc-out-`));
     await CLI.run([wiiUDir, outDir, "-v"]);

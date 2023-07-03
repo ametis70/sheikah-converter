@@ -2,12 +2,12 @@
   "name": "@sheikah-converter/cli",
   "version": "0.0.0",
   "description": "CLI to convert BotW save files between console formats",
-  "author": "Ian Mancini @ametis70",
+  "author": "Ian Mancini",
   "bin": {
-    "sheikahcli": "./bin/run"
+    "botwc": "./bin/run"
   },
-  "homepage": "https://github.com/ametis70/sheikah-converter",
-  "license": "MIT",
+  "homepage": "https://github.com/ametis70/sheikah-converter/tree/main/packages/cli#readme",
+  "license": "AGPL-3.0-or-later",
   "main": "dist/index.js",
   "repository": "ametis70/sheikah-converter",
   "files": [
@@ -40,7 +40,6 @@
   },
   "oclif": {
     "bin": "botwc",
-    "dirname": "botwc",
     "commands": "./dist",
     "default": ".",
     "plugins": [

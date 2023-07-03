@@ -2,9 +2,9 @@
   "name": "@sheikah-converter/test",
   "description": "Cross package test data/utils for sheikah-converter",
   "version": "0.0.0",
-  "author": "ametis70",
-  "homepage": "",
-  "license": "MIT",
+  "author": "Ian Mancini",
+  "homepage": "https://github.com/ametis70/sheikah-converter/tree/main/packages/test#readme",
+  "license": "AGPL-3.0-or-later",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

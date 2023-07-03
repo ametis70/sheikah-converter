@@ -2,9 +2,9 @@
   "name": "@sheikah-converter/lib",
   "version": "0.0.0",
   "description": "Library to convert BotW save files between console formats",
-  "author": "ametis70",
-  "homepage": "",
-  "license": "MIT",
+  "author": "Ian Mancini",
+  "homepage": "https://github.com/ametis70/sheikah-converter/tree/main/packages/lib#readme",
+  "license": "AGPL-3.0-or-later",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [

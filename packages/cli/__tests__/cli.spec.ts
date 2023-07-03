@@ -5,7 +5,11 @@ import os from "node:os";
 
 import { stdout, stderr } from "stdout-stderr";
 
-import { copyDir, getTempSaveDir } from "@sheikah-converter/test";
+import {
+  copyDir,
+  getTempSaveDir,
+  createEmptyFile,
+} from "@sheikah-converter/test";
 import { getSaveType, SaveType } from "@sheikah-converter/lib";
 
 import { CLI } from "../src";
@@ -313,7 +317,6 @@ describe("botwc CLI", () => {
     );
   });
 
-  // Test that fails when no game_data.sav files exist in the input directory
   it("Should fail when no game_data.sav files exist in the input directory", async () => {
     const outDir = await fs.mkdtemp(path.resolve(os.tmpdir(), `sc-out-`));
     const modifiedInputDir = await fs.mkdtemp(
@@ -334,7 +337,6 @@ describe("botwc CLI", () => {
     }
   });
 
-  // Test that fails when no option.sav file exist in the input directory
   it("Should fail when no option.sav file exist in the input directory", async () => {
     const outDir = await fs.mkdtemp(path.resolve(os.tmpdir(), `sc-out-`));
     const modifiedInputDir = await fs.mkdtemp(
@@ -355,7 +357,70 @@ describe("botwc CLI", () => {
     }
   });
 
-  // Test that fails when the input directory is not a directory
+  it("Should fail when the input path does not exist", async () => {
+    const inputDir = path.resolve("/doesnotexist");
+    const outDir = await fs.mkdtemp(path.resolve(os.tmpdir(), `sc-out-`));
+
+    try {
+      await CLI.run([inputDir, outDir]);
+    } catch (e: any) {
+      stdout.stop();
+      stderr.stop();
+      expect(e.message).toBe(`Input path "${inputDir}" does not exist`);
+    }
+  });
+
+  it("Should fail when the input path is not a directory", async () => {
+    const inputDir = await fs.mkdtemp(path.resolve(os.tmpdir(), `sc-in-`));
+    const outDir = await fs.mkdtemp(path.resolve(os.tmpdir(), `sc-out-`));
+    const file = path.resolve(inputDir, "test");
+
+    await createEmptyFile(file);
+
+    try {
+      await CLI.run([file, outDir]);
+    } catch (e: any) {
+      stdout.stop();
+      stderr.stop();
+      expect(e.message).toBe(`Input path "${file}" is not a directory`);
+    }
+  });
+
+  it("Should fail when the output path is not a directory", async () => {
+    const outDir = await fs.mkdtemp(path.resolve(os.tmpdir(), `sc-out-`));
+    const file = path.resolve(outDir, "test");
+
+    await createEmptyFile(file);
+
+    try {
+      await CLI.run([wiiUDir, file]);
+    } catch (e: any) {
+      stdout.stop();
+      stderr.stop();
+      expect(stdout.output).toBe(
+        `Output path "${file}" exists but is not a directory\n`
+      );
+      expect(e.message).toBe(`Set -f to allow deleting files`);
+    }
+  });
+
+  it("Should fail when the output path is not empty", async () => {
+    const outDir = await fs.mkdtemp(path.resolve(os.tmpdir(), `sc-out-`));
+    const file = path.resolve(outDir, "test");
+
+    await createEmptyFile(file);
+
+    try {
+      await CLI.run([wiiUDir, outDir]);
+    } catch (e: any) {
+      stdout.stop();
+      stderr.stop();
+      expect(stdout.output).toBe(
+        `Output path "${outDir}" exists but is not empty\n`
+      );
+      expect(e.message).toBe(`Set -f to allow deleting files`);
+    }
+  });
 
   // Test that copy image files from input directory
 

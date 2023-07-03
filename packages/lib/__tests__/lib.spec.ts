@@ -1,10 +1,10 @@
 import fs from "fs/promises";
 import path from "path";
 
-import { getTempSaveDir } from '@sheikah-converter/test'
+import { getTempSaveDir } from "@sheikah-converter/test";
 
 import { SaveType } from "../src/data";
-import { convertSaveFile, getSaveType } from "../src/lib";
+import { convertSaveFile, getSaveType, getPrettySaveType } from "../src/lib";
 
 import { compareArrays } from "./utils";
 
@@ -13,32 +13,28 @@ let switchDir: string;
 
 describe("library", () => {
   beforeAll(async () => {
-    wiiUDir = await getTempSaveDir('wiiu')
-    switchDir = await getTempSaveDir('switch')
-  })
+    wiiUDir = await getTempSaveDir("wiiu");
+    switchDir = await getTempSaveDir("switch");
+  });
 
   afterAll(async () => {
     await fs.rm(wiiUDir, { recursive: true });
     await fs.rm(switchDir, { recursive: true });
-  })
+  });
 
-  it("should return the correct save type and version when given a Wii U option.save file", async () => {
-    const file = await fs.readFile(
-      path.resolve(wiiUDir, "option.sav")
-    );
+  it("Should return the correct save type and version when given a Wii U option.save file", async () => {
+    const file = await fs.readFile(path.resolve(wiiUDir, "option.sav"));
     const saveType = getSaveType(file.buffer);
     expect(saveType).toStrictEqual({ type: SaveType.WiiU, version: "v1.5" });
   });
 
-  it("should return the correct save type and version when given a Switch option.save file", async () => {
-    const file = await fs.readFile(
-      path.resolve(switchDir, "option.sav")
-    );
+  it("Should return the correct save type and version when given a Switch option.save file", async () => {
+    const file = await fs.readFile(path.resolve(switchDir, "option.sav"));
     const saveType = getSaveType(file.buffer);
     expect(saveType).toStrictEqual({ type: SaveType.Switch, version: "v1.5" });
   });
 
-  it("should throw a type error when given an invalid file", async () => {
+  it("Should throw a type error when given an invalid file", async () => {
     // Load this same file, any file will do
     const file = await fs.readFile(path.resolve(__dirname, "lib.spec.ts"));
     expect(() => {
@@ -46,7 +42,7 @@ describe("library", () => {
     }).toThrow(TypeError);
   });
 
-  it("should convert a Wii U game_data.sav file to Switch correctly", async () => {
+  it("Should convert a Wii U game_data.sav file to Switch correctly", async () => {
     const wiiUFile = await fs.readFile(
       path.resolve(wiiUDir, "0", "game_data.sav")
     );
@@ -66,7 +62,7 @@ describe("library", () => {
     ).not.toThrow();
   });
 
-  it("should convert a Switch game_data.sav file to WiiU correctly", async () => {
+  it("Should convert a Switch game_data.sav file to WiiU correctly", async () => {
     const switchFile = await fs.readFile(
       path.resolve(switchDir, "0", "game_data.sav")
     );
@@ -86,7 +82,7 @@ describe("library", () => {
     ).not.toThrow();
   });
 
-  it("should convert a Wii U caption.sav file to Switch correctly", async () => {
+  it("Should convert a Wii U caption.sav file to Switch correctly", async () => {
     const wiiUFile = await fs.readFile(
       path.resolve(wiiUDir, "0", "caption.sav")
     );
@@ -106,7 +102,7 @@ describe("library", () => {
     ).not.toThrow();
   });
 
-  it("should convert a Switch caption.sav file to WiiU correctly", async () => {
+  it("Should convert a Switch caption.sav file to WiiU correctly", async () => {
     const switchFile = await fs.readFile(
       path.resolve(switchDir, "0", "caption.sav")
     );
@@ -126,7 +122,7 @@ describe("library", () => {
     ).not.toThrow();
   });
 
-  it("should convert a Wii U trackblockXX.sav file to Switch correctly", async () => {
+  it("Should convert a Wii U trackblockXX.sav file to Switch correctly", async () => {
     const wiiUFile = await fs.readFile(
       path.resolve(wiiUDir, "tracker", "trackblock00.sav")
     );
@@ -146,7 +142,7 @@ describe("library", () => {
     ).not.toThrow();
   });
 
-  it("should convert a Switch trackblockXX.sav file to WiiU correctly", async () => {
+  it("Should convert a Switch trackblockXX.sav file to WiiU correctly", async () => {
     const switchFile = await fs.readFile(
       path.resolve(switchDir, "tracker", "trackblock00.sav")
     );
@@ -164,5 +160,17 @@ describe("library", () => {
     expect(() =>
       compareArrays(resultArr, wiiUReferenceArr, switchArr)
     ).not.toThrow();
+  });
+
+  it("Should print Wii U pretty name correctly", async () => {
+    expect(getPrettySaveType(SaveType.WiiU)).toBe("Wii U");
+  });
+
+  it("Should print Switch pretty name correctly", async () => {
+    expect(getPrettySaveType(SaveType.Switch)).toBe("Switch");
+  });
+
+  it("Should handle printing wrong save type", async () => {
+    expect(getPrettySaveType(-1 as SaveType)).toBe("Unknown");
   });
 });

@@ -53,6 +53,11 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
       char: "d",
       description: "Dry run (do not write files)",
     }),
+    check: Flags.boolean({
+      char: "c",
+      description:
+        "Check and print the type of save inside the input directory",
+    }),
     verbose: Flags.boolean({
       char: "v",
       description: "Print verbose output",
@@ -63,6 +68,8 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
   private _force = false;
   private _dry = false;
   private _dryDirectorySet = new Set();
+  private _check = false;
+  private _saveTypes = new Set();
 
   private inputDir = "";
   private outputDir = "";
@@ -136,7 +143,6 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
     }
 
     const saveFiles = await Promise.all(saveFilesPromises);
-    const saveTypes = new Set();
 
     for (const [path, saveFile] of saveFiles) {
       if (path.includes("trackblock")) {
@@ -144,15 +150,9 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
       }
 
       const { type, version } = getSaveType(saveFile);
-      saveTypes.add(type);
+      this._saveTypes.add(type);
       this.verbose(
         `Found ${getPrettySaveType(type)} save file (${version}) in ${path}`
-      );
-    }
-
-    if (saveTypes.size > 1) {
-      this.error(
-        "Mixed save types. Please ensure there is only one type of save file in input directory."
       );
     }
 
@@ -376,6 +376,10 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
       this.log("Running in dry mode");
     }
 
+    if (flags.check) {
+      this._check = true;
+    }
+
     this.outputDir =
       args.output ?? resolve(process.cwd(), this.generateOutputDirName());
 
@@ -395,6 +399,17 @@ Version 1.5 and 1.6 are compatible and should work interchangeably on both platf
     // Read and validate save files
     const saveFiles = await this.getSaveFiles(args.input);
     const optionFile = await this.getOptionFile(args.input);
+
+    if (this._check) {
+      this.log(getPrettySaveType(this._saveTypes.values().next().value));
+      this.exit(0);
+    }
+
+    if (this._saveTypes.size > 1) {
+      this.error(
+        "Mixed save types. Please ensure there is only one type of save file in input directory."
+      );
+    }
 
     // Trigger buffers conversion
     const convertPromises: Promise<void>[] = [];

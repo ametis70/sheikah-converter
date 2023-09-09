@@ -195,7 +195,6 @@ dist
 *.csr
 *.css
 *.htm
-*.html
 *.jsp
 *.php
 *.rss

@@ -20,3 +20,7 @@
   opacity: 0.2;
   background: radial-gradient(156.9% 156.9% at 50% 50%, rgba(5, 5, 5, 0.00) 0%, #050505 100%);
 }
+
+.focus-default {
+  @apply focus:outline focus:outline-2 focus:outline-blue focus:outline-offset-4;
+}

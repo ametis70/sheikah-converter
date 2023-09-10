@@ -1,7 +1,8 @@
 import { Tab, Dialog } from "@headlessui/react";
 import { useState } from "react";
 
-import Container from './components/Container';
+import Container from "./components/Container";
+import Header from './components/Header';
 
 const sourceType = "Wii U";
 const targetType = "Switch";
@@ -10,33 +11,11 @@ const titles = ["Select folder", "Convert", "Save"];
 
 function App() {
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
-  let [modalOpen, setModalOpen] = useState(false);
 
   return (
     <Container>
-      <header>
-        <h1>Sheikah Converter</h1>
-        <button onClick={() => setModalOpen(true)}>info</button>
-      </header>
+      <Header />
 
-      <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
-        <Dialog.Panel>
-          <Dialog.Title>Sheikah Converter</Dialog.Title>
-          <Dialog.Description>TLoZ: BotW saves converter</Dialog.Description>
-
-          <p>
-            In this website you can convert your save files from The Legend of
-            Zelda: Breath of the Wild from one console format to another (Switch
-            to Wii U or Wii U to Switch). Just upload the save folder and
-            convert away!
-            <br />
-            <br />
-            You can check the source code on{" "}
-            <a href="https://github.com/ametis70/sheikah-converter">GitHub.</a>
-          </p>
-          <button onClick={() => setModalOpen(false)}>Close</button>
-        </Dialog.Panel>
-      </Dialog>
       <main>
         <h2>{titles[selectedTabIndex]}</h2>
         <Tab.Group

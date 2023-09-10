@@ -1,3 +1,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.screen-glow {
+  background: linear-gradient(180deg, rgba(16, 30, 62, 0.00) 0%, rgba(2, 63, 143, 0.50) 78.65%, rgba(54, 122, 255, 0.50) 100%);
+}
+
+.screen-darken {
+  opacity: 0.2;
+  background: radial-gradient(156.9% 156.9% at 50% 50%, rgba(5, 5, 5, 0.00) 0%, #050505 100%);
+}

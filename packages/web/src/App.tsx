@@ -1,6 +1,8 @@
 import { Tab, Dialog } from "@headlessui/react";
 import { useState } from "react";
 
+import Container from './components/Container';
+
 const sourceType = "Wii U";
 const targetType = "Switch";
 
@@ -11,7 +13,7 @@ function App() {
   let [modalOpen, setModalOpen] = useState(false);
 
   return (
-    <>
+    <Container>
       <header>
         <h1>Sheikah Converter</h1>
         <button onClick={() => setModalOpen(true)}>info</button>
@@ -84,7 +86,7 @@ function App() {
           </Tab.Panel>
         </Tab.Group>
       </main>
-    </>
+    </Container>
   );
 }
 

@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+.sheikah-glow-text {
+  text-shadow: 0px 0px 10px #4FC0FF, 0px 1px 11px #0A8DD7;
+  filter: blur(0.5px);
+}
+
+.sheikah-glow {
+  box-shadow: 0px 0px 8px 0px #4FC0FF;
+  filter: blur(0.5px);
+}
+
 .screen-glow {
   background: linear-gradient(180deg, rgba(16, 30, 62, 0.00) 0%, rgba(2, 63, 143, 0.50) 78.65%, rgba(54, 122, 255, 0.50) 100%);
 }

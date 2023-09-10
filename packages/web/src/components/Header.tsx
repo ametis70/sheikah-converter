@@ -1,4 +1,4 @@
-import { useState, Fragment } from "react";
+import { useState, Fragment, useRef } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 
 import infoButton from "../assets/info-button.svg";
@@ -6,6 +6,7 @@ import modalCorner from "../assets/modal-corner.svg";
 
 const Header = () => {
   let [modalOpen, setModalOpen] = useState(false);
+  const closeButtonRef = useRef(null);
 
   return (
     <>
@@ -22,7 +23,10 @@ const Header = () => {
         </button>
       </header>
       <Transition show={modalOpen} as={Fragment}>
-        <Dialog onClose={() => setModalOpen(false)}>
+        <Dialog
+          onClose={() => setModalOpen(false)}
+          initialFocus={closeButtonRef}
+        >
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
@@ -85,6 +89,7 @@ const Header = () => {
                 <button
                   className="text-button font-medium italic bg-scrim rounded p-[3px] w-[330px] mt-12 focus-default"
                   onClick={() => setModalOpen(false)}
+                  ref={closeButtonRef}
                 >
                   <div className="py-3 w-full flex items-center justify-center border-buttonborder border rounded-sm">
                     Close

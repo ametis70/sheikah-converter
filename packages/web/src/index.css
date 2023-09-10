@@ -22,5 +22,5 @@
 }
 
 .focus-default {
-  @apply focus:outline focus:outline-2 focus:outline-blue focus:outline-offset-4;
+  @apply focus:outline focus:outline-2 focus:outline-blue focus:outline-offset-2 rounded;
 }

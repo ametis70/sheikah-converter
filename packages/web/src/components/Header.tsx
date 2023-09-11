@@ -50,16 +50,23 @@ const Header = () => {
             <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center">
               <Dialog.Panel className="text-tan h-fit flex flex-col items-center">
                 <div className="relative bg-overlaydark pt-12 pb-8 px-36 flex flex-col items-center">
-                  <img src={modalCorner} className="absolute top-4 left-4" />
                   <img
+                    alt=""
+                    src={modalCorner}
+                    className="absolute top-4 left-4"
+                  />
+                  <img
+                    alt=""
                     src={modalCorner}
                     className="absolute top-4 right-4 rotate-90"
                   />
                   <img
+                    alt=""
                     src={modalCorner}
                     className="absolute bottom-4 right-4 rotate-180"
                   />
                   <img
+                    alt=""
                     src={modalCorner}
                     className="absolute bottom-4 left-4 -rotate-90"
                   />

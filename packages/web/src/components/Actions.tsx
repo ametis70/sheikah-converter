@@ -16,8 +16,8 @@ type ActionData = {
 };
 
 const Actions = () => {
-  const [sourceType, setSourceType] = useState("Wii U");
-  const [targetType, setTargetType] = useState("Switch");
+  const [sourceType] = useState("Wii U");
+  const [targetType] = useState("Switch");
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
 
   const actions: ActionData[] = [
@@ -73,13 +73,13 @@ const Actions = () => {
         >
           <Tab.List className="flex gap-4 pb-12">
             {actions.map(({ icon }, index) => (
-              <Tab>
+              <Tab key={`${icon}-${index}`}>
                 <ActionButton
                   icon={icon}
                   disabled={index === 2}
                   active={index === selectedTabIndex}
-                  onMouseEnter={() => setSelectedTabIndex(index)}
-                  onFocus={() => setSelectedTabIndex(index)}
+                  onMouseEnter={() => { setSelectedTabIndex(index); }}
+                  onFocus={() => { setSelectedTabIndex(index); }}
                   onClick={() => undefined}
                   onKeyUp={() => undefined}
                 />
@@ -87,8 +87,8 @@ const Actions = () => {
             ))}
           </Tab.List>
           <Tab.Panels>
-            {actions.map(({ icon, description, subtitle }) => (
-              <Tab.Panel key={icon} tabIndex={-1}>
+            {actions.map(({ icon, description, subtitle }, id) => (
+              <Tab.Panel key={`${icon}-${id}`} tabIndex={-1}>
                 <p className="text-actionsubtitle text-blue sheikah-glow-text italic font-medium text-center ">
                   <strong>{subtitle}</strong>
                 </p>

@@ -1,8 +1,7 @@
 import { render } from "@testing-library/react";
 import App from "./App";
 
-test("renders learn react link", () => {
+test("Smoke bomb App test", () => {
   render(<App />);
-  // TODO: test
   expect(true).toBeTruthy();
 });

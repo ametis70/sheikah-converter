@@ -5,7 +5,7 @@ import infoButton from "../assets/info-button.svg";
 import modalCorner from "../assets/modal-corner.svg";
 
 const Header = () => {
-  let [modalOpen, setModalOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const closeButtonRef = useRef(null);
 
   return (
@@ -16,15 +16,16 @@ const Header = () => {
           Sheikah Converter
         </h1>
         <button
-          onClick={() => setModalOpen(true)}
+          onClick={() => { setModalOpen(true); }}
           className="flex items-center justify-center gap-3 text-blue sheikah-glow-text text-base font-medium italic ml-auto focus-default"
         >
-          <img src={infoButton} className="flex-0 drop-shadow-glow" /> info
+          <img alt="" src={infoButton} className="flex-0 drop-shadow-glow" />{" "}
+          info
         </button>
       </header>
       <Transition show={modalOpen} as={Fragment}>
         <Dialog
-          onClose={() => setModalOpen(false)}
+          onClose={() => { setModalOpen(false); }}
           initialFocus={closeButtonRef}
         >
           <Transition.Child
@@ -95,7 +96,7 @@ const Header = () => {
                 </div>
                 <button
                   className="text-button font-medium italic bg-scrim rounded p-[3px] w-[330px] mt-12 focus-default"
-                  onClick={() => setModalOpen(false)}
+                  onClick={() => { setModalOpen(false); }}
                   ref={closeButtonRef}
                 >
                   <div className="py-3 w-full flex items-center justify-center border-buttonborder border rounded-sm">

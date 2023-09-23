@@ -1,4 +1,5 @@
-import { ReactNode, useState } from "react";
+import { ChangeEvent, ReactNode, useEffect, useRef, useState } from "react";
+import JSZip from "jszip";
 import { Tab } from "@headlessui/react";
 
 import ActionButton from "./ActionButton";
@@ -13,25 +14,36 @@ type ActionData = {
   subtitle: string;
   icon: string;
   description: ReactNode;
+  onClick?: () => void;
+  disabled: boolean;
 };
 
 const Actions = () => {
+  const filePickerRef = useRef<HTMLInputElement>(null);
   const [sourceType] = useState("Wii U");
   const [targetType] = useState("Switch");
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
+  const [originalSave, setOriginalSave] = useState<Record<
+    string,
+    ArrayBuffer
+  > | null>(null);
 
   const actions: ActionData[] = [
     {
-      title: "Select Folder",
-      subtitle: "Select a save folder from disk",
+      title: "Select Zip",
+      subtitle: "Select a save zip from disk",
       icon: open,
       description: (
         <p className="description">
-          Select a folder that contains a save. <br />
+          Select a zip that contains a save. <br />
           The converter will automatically determine if it’s a save for{" "}
           <span>Wii U</span> or <span>Switch</span> in the next step.
         </p>
       ),
+      onClick: () => {
+        filePickerRef.current?.click();
+      },
+      disabled: false,
     },
     {
       title: "Convert",
@@ -44,6 +56,7 @@ const Actions = () => {
           The original file in your disk won’t be modified.
         </p>
       ),
+      disabled: !originalSave,
     },
     {
       title: "Save",
@@ -57,11 +70,55 @@ const Actions = () => {
           a backup on the actual console.
         </p>
       ),
+      disabled: true,
     },
   ];
 
+  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      console.error("no file");
+      return;
+    }
+
+    const handleZip = async () => {
+      const zip = await JSZip.loadAsync(file);
+      const zipPromises: Promise<Record<string, ArrayBuffer>>[] = [];
+
+      zip.forEach((relativePath, zipEntry) => {
+        if (zipEntry.dir) return;
+        zipPromises.push(
+          new Promise((resolve) => {
+            zipEntry
+              .async("arraybuffer")
+              .then((data) => {
+                resolve({ [relativePath]: data });
+              })
+              .catch(() => {
+                console.error(`Error when getting data for ${relativePath}`);
+              });
+          })
+        );
+      });
+
+      const files = await Promise.all(zipPromises);
+      setOriginalSave(
+        files.reduce((acc, file) => {
+          return { ...acc, ...file };
+        }, {})
+      );
+    };
+
+    void handleZip();
+  };
+
+  useEffect(() => {
+    console.log(originalSave);
+  }, [originalSave]);
+
   return (
     <>
+      <input hidden type="file" ref={filePickerRef} onChange={onChange} />
       <div className="flex-1" />
       <main className="flex flex-col items-center mx-auto flex-0 mb-16">
         <h2 className="text-actiontitle text-blue sheikah-glow-text italic font-medium text-center leading-none pb-16">
@@ -72,15 +129,19 @@ const Actions = () => {
           onChange={setSelectedTabIndex}
         >
           <Tab.List className="flex gap-4 pb-12">
-            {actions.map(({ icon }, index) => (
+            {actions.map(({ icon, onClick, disabled }, index) => (
               <Tab key={`${icon}-${index}`}>
                 <ActionButton
                   icon={icon}
-                  disabled={index === 2}
                   active={index === selectedTabIndex}
-                  onMouseEnter={() => { setSelectedTabIndex(index); }}
-                  onFocus={() => { setSelectedTabIndex(index); }}
-                  onClick={() => undefined}
+                  disabled={disabled}
+                  onMouseEnter={() => {
+                    setSelectedTabIndex(index);
+                  }}
+                  onFocus={() => {
+                    setSelectedTabIndex(index);
+                  }}
+                  onClick={onClick ?? (() => undefined)}
                   onKeyUp={() => undefined}
                 />
               </Tab>
